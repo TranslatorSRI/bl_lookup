@@ -1,0 +1,6 @@
+__pycache__/
+.vscode/
+venv/
+DS_Store/
+
+swagger_ui/

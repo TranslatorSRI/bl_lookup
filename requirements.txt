@@ -1,0 +1,5 @@
+jinja2
+pyyaml
+requests
+sanic==19.9.0
+swagger_ui_bundle

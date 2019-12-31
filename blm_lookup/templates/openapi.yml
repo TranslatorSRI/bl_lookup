@@ -1,0 +1,35 @@
+openapi: 3.0.2
+info:
+  title: Biolink Model Lookup
+  description: 'Utilities for querying the Biolink Model'
+  version: '1.0.0'
+  contact:
+    email: patrick@covar.com
+  termsOfService: http://robokop.renci.org:7055/tos?service_long=Biolink+Model+Lookup&provider_long=the+Translator+Consortium
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+tags:
+  - name: lookup
+{% if path is defined -%}
+servers:
+  - url: "/{{ path }}"
+{% endif -%}
+paths:
+  {%- for endpoint in endpoints %}
+  /blm/{{ endpoint.concept }}/{{ endpoint.property }}:
+    get:
+      tags:
+        - lookup
+      summary: 'Look up {{ endpoint.property }} of {{ endpoint.concept }}'
+      description: ''
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  {%- endfor %}
