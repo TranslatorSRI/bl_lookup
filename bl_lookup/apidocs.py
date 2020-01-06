@@ -18,10 +18,9 @@ template = env.get_template('openapi.yml')
 spec_string = template.render(
     endpoints=[
         {
-            'concept': key0,
-            'property': key1,
+            'property': key,
         }
-        for key0 in sorted(data, key=str.lower) for key1 in data[key0]
+        for key in set.union(*list(set(datum.keys()) for datum in data.values()))
     ]
 )
 with open('swagger_ui/openapi.yml', 'w') as f:

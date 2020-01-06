@@ -17,12 +17,17 @@ servers:
 {% endif -%}
 paths:
   {%- for endpoint in endpoints %}
-  /bl/{{ endpoint.concept }}/{{ endpoint.property }}:
+  /bl/{concept}/{{ endpoint.property }}:
     get:
       tags:
         - lookup
-      summary: 'Look up {{ endpoint.property }} of {{ endpoint.concept }}'
+      summary: 'Look up {{ endpoint.property }} of concept'
       description: ''
+      parameters:
+        - in: path
+          required: true
+          name: concept
+          default: chemical_substance
       responses:
         '200':
           description: successful operation
