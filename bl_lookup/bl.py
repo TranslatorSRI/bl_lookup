@@ -98,3 +98,7 @@ data = {
     }
     for entity_type in bl.types
 }
+raw = {
+    snake_case(key): value
+    for key, value in bl.model['classes'].items()
+}

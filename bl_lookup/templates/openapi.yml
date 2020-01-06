@@ -38,3 +38,21 @@ paths:
                 items:
                   type: string
   {%- endfor %}
+  /bl/{concept}:
+    get:
+      tags:
+        - lookup
+      summary: 'Get properties for concept'
+      description: ''
+      parameters:
+        - in: path
+          required: true
+          name: concept
+          default: chemical_substance
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
