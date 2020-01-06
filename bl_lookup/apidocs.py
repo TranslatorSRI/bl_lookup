@@ -20,7 +20,7 @@ spec_string = template.render(
         {
             'property': key,
         }
-        for key in set.union(*list(set(datum.keys()) for datum in data.values()))
+        for key in set.union(*list(set(datum.keys()) for datum in data['latest']['geneology'].values()))
     ]
 )
 with open('swagger_ui/openapi.yml', 'w') as f:

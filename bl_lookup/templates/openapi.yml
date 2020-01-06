@@ -11,6 +11,7 @@ info:
     url: 'https://opensource.org/licenses/MIT'
 tags:
   - name: lookup
+  - name: meta
 {% if path is defined -%}
 servers:
   - url: "/{{ path }}"
@@ -28,6 +29,9 @@ paths:
           required: true
           name: concept
           default: chemical_substance
+        - in: query
+          name: version
+          default: latest
       responses:
         '200':
           description: successful operation
@@ -49,6 +53,9 @@ paths:
           required: true
           name: concept
           default: chemical_substance
+        - in: query
+          name: version
+          default: latest
       responses:
         '200':
           description: successful operation
@@ -56,3 +63,18 @@ paths:
             application/json:
               schema:
                 type: object
+  /versions:
+    get:
+      tags:
+        - meta
+      summary: 'Get available Biolink Model versions'
+      description: ''
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
