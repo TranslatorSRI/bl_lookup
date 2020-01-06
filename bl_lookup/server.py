@@ -1,15 +1,15 @@
-"""Sanic BLM server."""
+"""Sanic BL server."""
 from sanic import Sanic, response
 
-from blm_lookup.apidocs import bp as apidocs_blueprint
-from blm_lookup.blm import data
+from bl_lookup.apidocs import bp as apidocs_blueprint
+from bl_lookup.bl import data
 
 app = Sanic()
 app.config.ACCESS_LOG = False
 app.blueprint(apidocs_blueprint)
 
 
-@app.route('/blm/<concept>/<key>')
+@app.route('/bl/<concept>/<key>')
 async def lookup(request, concept, key):
     """Get value of property for concept.
 

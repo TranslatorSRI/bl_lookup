@@ -1,14 +1,14 @@
-"""Setup file for blm_lookup package."""
+"""Setup file for bl_lookup package."""
 from setuptools import setup
 
 setup(
-    name='blm_lookup',
+    name='bl_lookup',
     version='1.0.0',
     author='Patrick Wang',
     author_email='patrick@covar.com',
-    url='https://github.com/patrickkwang/blm_lookup',
+    url='https://github.com/patrickkwang/bl_lookup',
     description='Biolink Model Lookup',
-    packages=['blm_lookup'],
+    packages=['bl_lookup'],
     include_package_data=True,
     zip_safe=False,
     license='MIT',

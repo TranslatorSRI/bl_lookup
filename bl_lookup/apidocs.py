@@ -1,18 +1,18 @@
-"""BLM API docs."""
+"""BL API docs."""
 from pathlib import Path
 
 from jinja2 import Environment, PackageLoader, FileSystemLoader
 from sanic import Blueprint, response
 from swagger_ui_bundle import swagger_ui_3_path
 
-from blm_lookup.blm import data
+from bl_lookup.bl import data
 
 # create swagger_ui directory
 Path('swagger_ui').mkdir(exist_ok=True)
 
 # build OpenAPI schema
 env = Environment(
-    loader=PackageLoader('blm_lookup', 'templates')
+    loader=PackageLoader('bl_lookup', 'templates')
 )
 template = env.get_template('openapi.yml')
 spec_string = template.render(

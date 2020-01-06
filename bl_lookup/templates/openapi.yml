@@ -17,7 +17,7 @@ servers:
 {% endif -%}
 paths:
   {%- for endpoint in endpoints %}
-  /blm/{{ endpoint.concept }}/{{ endpoint.property }}:
+  /bl/{{ endpoint.concept }}/{{ endpoint.property }}:
     get:
       tags:
         - lookup

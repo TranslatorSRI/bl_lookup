@@ -89,13 +89,13 @@ def snake_case(arg: typing.Union[str, typing.List[str]]):
         raise ValueError()
 
 
-blm = BiolinkModel('latest')
+bl = BiolinkModel('latest')
 data = {
     snake_case(entity_type): {
-        'ancestors': snake_case(blm.get_ancestors(entity_type)),
-        'descendants': snake_case(blm.get_descendants(entity_type)),
-        'lineage': snake_case(blm.get_lineage(entity_type)),
+        'ancestors': snake_case(bl.get_ancestors(entity_type)),
+        'descendants': snake_case(bl.get_descendants(entity_type)),
+        'lineage': snake_case(bl.get_lineage(entity_type)),
     }
-    for entity_type in blm.types
-    if entity_type in blm.get_descendants('biological entity')
+    for entity_type in bl.types
+    if entity_type in bl.get_descendants('biological entity')
 }

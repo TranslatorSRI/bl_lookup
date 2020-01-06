@@ -16,7 +16,7 @@ ADD ./requirements.txt /home/murphy/requirements.txt
 RUN pip install -r /home/murphy/requirements.txt --src /usr/local/src
 
 # install library
-ADD ./blm_lookup /home/murphy/blm_lookup
+ADD ./bl_lookup /home/murphy/bl_lookup
 ADD ./main.py /home/murphy/main.py
 ADD ./setup.py /home/murphy/setup.py
 RUN pip install -e .

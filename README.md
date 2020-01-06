@@ -12,6 +12,6 @@ pip install -r requirements.txt
 ### Docker
 
 ```bash
-docker build -t blm_lookup .
-docker run -p 8144:8144 blm_lookup --port 8144
+docker build -t bl_lookup .
+docker run -p 8144:8144 bl_lookup --port 8144
 ```
