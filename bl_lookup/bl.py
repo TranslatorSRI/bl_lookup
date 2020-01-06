@@ -97,5 +97,4 @@ data = {
         'lineage': snake_case(bl.get_lineage(entity_type)),
     }
     for entity_type in bl.types
-    if entity_type in bl.get_descendants('biological entity')
 }
