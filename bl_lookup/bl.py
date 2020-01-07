@@ -20,12 +20,13 @@ class BiolinkModel():
         response = requests.get(file_url)
         if response.status_code != 200:
             raise RuntimeError(f'Unable to access Biolink Model at {file_url}')
-        self.model = yaml.load(response.text, Loader=yaml.FullLoader)
+        model = yaml.load(response.text, Loader=yaml.FullLoader)
+        self.things = dict(**model['classes'], **model['slots'])
 
     @property
     def types(self):
         """Get all types."""
-        return list(self.model['classes'])
+        return list(self.things)
 
     def get_children(self, concepts):
         """Get direct children of concepts."""
@@ -33,7 +34,7 @@ class BiolinkModel():
             concepts = [concepts]
         return [
             key
-            for key, value in self.model['classes'].items()
+            for key, value in self.things.items()
             if value.get('is_a', None) in concepts
         ]
 
@@ -53,9 +54,9 @@ class BiolinkModel():
         if isinstance(concepts, str):
             concepts = [concepts]
         return [
-            self.model['classes'][c]['is_a']
+            self.things[c]['is_a']
             for c in concepts
-            if 'is_a' in self.model['classes'][c]
+            if 'is_a' in self.things[c]
         ]
 
     def get_ancestors(self, concepts):
@@ -102,7 +103,7 @@ for version in models:
     }
     raw = {
         snake_case(key): value
-        for key, value in bl.model['classes'].items()
+        for key, value in bl.things.items()
     }
     data[version] = {
         'geneology': geneology,
