@@ -1,4 +1,5 @@
 """Biolink model."""
+from collections import defaultdict
 import typing
 import requests
 import yaml
@@ -91,6 +92,7 @@ def snake_case(arg: typing.Union[str, typing.List[str]]):
 
 
 data = dict()
+uri_maps = dict()
 for version in models:
     bl = BiolinkModel(version)
     geneology = {
@@ -105,6 +107,13 @@ for version in models:
         snake_case(key): value
         for key, value in bl.things.items()
     }
+    uri_maps[version] = defaultdict(list)
+    for key, value in bl.things.items():
+        if 'slot_uri' in value:
+            uri = value['slot_uri']
+            uri_maps[version][uri].append(key)
+        for uri in uri_maps[version].get('mappings', []):
+            uri_maps[version][uri].append(key)
     data[version] = {
         'geneology': geneology,
         'raw': raw,

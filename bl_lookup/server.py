@@ -2,7 +2,7 @@
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
-from bl_lookup.bl import data
+from bl_lookup.bl import data, uri_maps
 
 app = Sanic()
 app.config.ACCESS_LOG = False
@@ -44,6 +44,21 @@ async def properties(request, concept):
     except KeyError:
         return response.text(f"No concept '{concept}'\n", status=404)
     return response.json(props)
+
+
+@app.route('/uri_lookup/<uri>')
+async def uri_lookup(request, uri):
+    """Look up slot by uri."""
+    version = request.args.get('version', 'latest')
+    try:
+        uri_map = uri_maps[version]
+    except KeyError:
+        return response.text(f"No version '{version}' available\n", status=404)
+    try:
+        keys = uri_map[uri]
+    except KeyError:
+        return response.text(f"No uri '{uri}'\n", status=404)
+    return response.json(keys)
 
 
 @app.route('/versions')
