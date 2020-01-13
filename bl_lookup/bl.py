@@ -112,7 +112,7 @@ for version in models:
         if 'slot_uri' in value:
             uri = value['slot_uri']
             uri_maps[version][uri].append(key)
-        for uri in uri_maps[version].get('mappings', []):
+        for uri in value.get('mappings', []):
             uri_maps[version][uri].append(key)
     data[version] = {
         'geneology': geneology,
