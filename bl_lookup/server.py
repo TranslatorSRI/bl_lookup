@@ -1,6 +1,8 @@
 """Sanic BL server."""
-from sanic import Sanic, response
 import urllib.parse
+
+from sanic import Sanic, response
+
 from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import data, uri_maps
 
