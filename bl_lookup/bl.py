@@ -1,6 +1,8 @@
 """Biolink model."""
 from collections import defaultdict
 import typing
+import re
+
 import requests
 import yaml
 
@@ -81,10 +83,10 @@ class BiolinkModel():
 def snake_case(arg: typing.Union[str, typing.List[str]]):
     """Convert each string or set of strings to snake_case."""
     if isinstance(arg, str):
-        return arg.replace(' ', '_')
+        return re.sub(r'\W', '_', arg)
     elif isinstance(arg, list):
         try:
-            return [arg.replace(' ', '_') for arg in arg]
+            return [re.sub(r'\W', '_', arg) for arg in arg]
         except AttributeError:
             raise ValueError()
     else:
