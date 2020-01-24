@@ -1,6 +1,6 @@
 """Sanic BL server."""
 from sanic import Sanic, response
-
+import urllib.parse
 from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import data, uri_maps
 
@@ -55,6 +55,7 @@ async def uri_lookup(request, uri):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
     try:
+        uri = urllib.parse.unquote(uri)
         keys = uri_map[uri]
     except KeyError:
         return response.text(f"No uri '{uri}'\n", status=404)
