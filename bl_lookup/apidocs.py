@@ -5,7 +5,7 @@ from jinja2 import Environment, PackageLoader, FileSystemLoader
 from sanic import Blueprint, response
 from swagger_ui_bundle import swagger_ui_3_path
 
-from bl_lookup.bl import data
+from bl_lookup.bl import generate_bl_map
 
 # create swagger_ui directory
 Path('swagger_ui').mkdir(exist_ok=True)
@@ -15,12 +15,13 @@ env = Environment(
     loader=PackageLoader('bl_lookup', 'templates')
 )
 template = env.get_template('openapi.yml')
+data, _ = generate_bl_map()
 spec_string = template.render(
     endpoints=[
         {
             'property': key,
         }
-        for key in set.union(*list(set(datum.keys()) for datum in data['latest']['geneology'].values()))
+        for key in set.union(*list(set(datum.keys()) for datum in data['geneology'].values()))
     ]
 )
 with open('swagger_ui/openapi.yml', 'w') as f:

@@ -94,10 +94,9 @@ def snake_case(arg: typing.Union[str, typing.List[str]]):
         raise ValueError()
 
 
-data = dict()
-uri_maps = dict()
-for version in models:
-    bl = BiolinkModel(version)
+def generate_bl_map(**kwargs):
+    """Generate map (dict) from BiolinkModel."""
+    bl = BiolinkModel(**kwargs)
     geneology = {
         snake_case(entity_type): {
             'ancestors': snake_case(bl.get_ancestors(entity_type)),
@@ -110,14 +109,15 @@ for version in models:
         snake_case(key): value
         for key, value in bl.things.items()
     }
-    uri_maps[version] = defaultdict(list)
+    uri_map = defaultdict(list)
     for key, value in bl.things.items():
         if 'slot_uri' in value:
             uri = value['slot_uri']
-            uri_maps[version][uri].append(key)
+            uri_map[uri].append(key)
         for uri in value.get('mappings', []):
-            uri_maps[version][uri].append(key)
-    data[version] = {
+            uri_map[uri].append(key)
+    data = {
         'geneology': geneology,
         'raw': raw,
     }
+    return data, uri_map

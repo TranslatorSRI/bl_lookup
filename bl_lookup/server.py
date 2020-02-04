@@ -4,7 +4,6 @@ import urllib.parse
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
-from bl_lookup.bl import data, uri_maps
 
 app = Sanic()
 app.config.ACCESS_LOG = False
@@ -19,7 +18,7 @@ async def lookup(request, concept, key):
     """
     version = request.args.get('version', 'latest')
     try:
-        _data = data[version]
+        _data = app.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
     try:
@@ -38,7 +37,7 @@ async def properties(request, concept):
     """Get raw properties for concept."""
     version = request.args.get('version', 'latest')
     try:
-        _data = data[version]
+        _data = app.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
     try:
@@ -53,7 +52,7 @@ async def uri_lookup(request, uri):
     """Look up slot by uri."""
     version = request.args.get('version', 'latest')
     try:
-        uri_map = uri_maps[version]
+        uri_map = app.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
     try:
@@ -67,4 +66,4 @@ async def uri_lookup(request, uri):
 @app.route('/versions')
 async def versions(request):
     """Get available BL versions."""
-    return response.json(list(data.keys()))
+    return response.json(list(app.userdata['data'].keys()))
