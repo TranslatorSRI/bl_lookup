@@ -17,12 +17,13 @@ models = {
 class BiolinkModel():
     """Biolink model."""
 
-    def __init__(self, version='latest'):
+    def __init__(self, url=None, version='latest'):
         """Initialize."""
-        file_url = models[version]
-        response = requests.get(file_url)
+        if url is None:
+            url = models[version]
+        response = requests.get(url)
         if response.status_code != 200:
-            raise RuntimeError(f'Unable to access Biolink Model at {file_url}')
+            raise RuntimeError(f'Unable to access Biolink Model at {url}')
         model = yaml.load(response.text, Loader=yaml.FullLoader)
         self.things = dict(**model['classes'], **model['slots'])
 
