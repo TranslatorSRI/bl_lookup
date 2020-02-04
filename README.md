@@ -13,5 +13,5 @@ pip install -r requirements.txt
 
 ```bash
 docker build -t bl_lookup .
-docker run -p 8144:8144 bl_lookup --port 8144
+docker run -p 8144:8144 bl_lookup --port 8144 --model "https://raw.githubusercontent.com/TranslatorIIPrototypes/biolink-model/moreprefixes/biolink-model.yaml"
 ```

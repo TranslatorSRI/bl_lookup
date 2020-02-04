@@ -7,6 +7,7 @@ from bl_lookup.bl import models, generate_bl_map
 parser = argparse.ArgumentParser(description='Start BL lookup server.')
 parser.add_argument('--host', default='0.0.0.0', type=str)
 parser.add_argument('--port', default=8144, type=int)
+parser.add_argument('--model', type=str)
 
 args = parser.parse_args()
 
@@ -14,6 +15,8 @@ data = dict()
 uri_maps = dict()
 for version in models:
     data[version], uri_maps[version] = generate_bl_map(version=version)
+if args.model is not None:
+    data['custom'], uri_maps['custom'] = generate_bl_map(url=args.model)
 
 app.userdata = {
     'data': data,
