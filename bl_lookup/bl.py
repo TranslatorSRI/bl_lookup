@@ -10,6 +10,7 @@ models = {
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
+    '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
     'latest': 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.yaml',
 }
 
