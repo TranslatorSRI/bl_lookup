@@ -50,9 +50,6 @@ def generate_bl_map(url=None, version='latest'):
 
     uri_map = defaultdict(list)
     for key, value in raw.items():
-        if 'slot_uri' in value:
-            uri = value['slot_uri']
-            uri_map[uri].append(key)
         for uri in value.get('mappings', []):
             uri_map[uri].append(key)
     data = {
