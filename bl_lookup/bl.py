@@ -3,8 +3,8 @@ from collections import defaultdict
 import typing
 import re
 
-import requests
-import yaml
+from bmt import Toolkit
+from jsonasobj import as_dict
 
 models = {
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
@@ -13,73 +13,6 @@ models = {
     '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
     'latest': 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.yaml',
 }
-
-
-class BiolinkModel():
-    """Biolink model."""
-
-    def __init__(self, url=None, version='latest'):
-        """Initialize."""
-        if url is None:
-            url = models[version]
-        response = requests.get(url)
-        if response.status_code != 200:
-            raise RuntimeError(f'Unable to access Biolink Model at {url}')
-        model = yaml.load(response.text, Loader=yaml.FullLoader)
-        self.things = dict(**model['classes'], **model['slots'])
-
-    @property
-    def types(self):
-        """Get all types."""
-        return list(self.things)
-
-    def get_children(self, concepts):
-        """Get direct children of concepts."""
-        if isinstance(concepts, str):
-            concepts = [concepts]
-        return [
-            key
-            for key, value in self.things.items()
-            if value.get('is_a', None) in concepts
-        ]
-
-    def get_descendants(self, concepts):
-        """Get all descendants of concepts, recursively."""
-        if isinstance(concepts, str):
-            concepts = [concepts]
-        children = self.get_children(concepts)
-        if not children:
-            return []
-        return children + self.get_descendants(
-            children
-        )
-
-    def get_parents(self, concepts):
-        """Get direct parent of each concept."""
-        if isinstance(concepts, str):
-            concepts = [concepts]
-        return [
-            self.things[c]['is_a']
-            for c in concepts
-            if 'is_a' in self.things[c]
-        ]
-
-    def get_ancestors(self, concepts):
-        """Get all ancestors of concepts."""
-        if isinstance(concepts, str):
-            concepts = [concepts]
-        parents = self.get_parents(concepts)
-        if not parents:
-            return []
-        return self.get_ancestors(
-            parents
-        ) + parents
-
-    def get_lineage(self, concepts):
-        """Get all ancestors and descendants of concepts."""
-        if isinstance(concepts, str):
-            concepts = [concepts]
-        return self.get_ancestors(concepts) + concepts + self.get_descendants(concepts)
 
 
 def snake_case(arg: typing.Union[str, typing.List[str]]):
@@ -95,23 +28,28 @@ def snake_case(arg: typing.Union[str, typing.List[str]]):
         raise ValueError()
 
 
-def generate_bl_map(**kwargs):
+def generate_bl_map(url=None, version='latest'):
     """Generate map (dict) from BiolinkModel."""
-    bl = BiolinkModel(**kwargs)
+    if url is None:
+        url = models[version]
+    bmt = Toolkit(url)
+    elements = bmt.descendents('related to') + bmt.descendents('association') + bmt.descendents('named thing') \
+        + ['named thing', 'related to', 'association']
     geneology = {
         snake_case(entity_type): {
-            'ancestors': snake_case(bl.get_ancestors(entity_type)),
-            'descendants': snake_case(bl.get_descendants(entity_type)),
-            'lineage': snake_case(bl.get_lineage(entity_type)),
+            'ancestors': snake_case([a for a in bmt.ancestors(entity_type) if a != entity_type]),
+            'descendants': snake_case(bmt.descendents(entity_type)),
+            'lineage': snake_case(bmt.ancestors(entity_type) + bmt.descendents(entity_type)),
         }
-        for entity_type in bl.types
+        for entity_type in elements
     }
     raw = {
-        snake_case(key): value
-        for key, value in bl.things.items()
+        snake_case(key): as_dict(bmt.get_element(key))
+        for key in elements
     }
+
     uri_map = defaultdict(list)
-    for key, value in bl.things.items():
+    for key, value in raw.items():
         if 'slot_uri' in value:
             uri = value['slot_uri']
             uri_map[uri].append(key)
