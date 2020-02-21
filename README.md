@@ -1,5 +1,7 @@
-# Biolink Model lookup service
 [![Build Status](https://travis-ci.com/TranslatorIIPrototypes/bl_lookup.svg?branch=master)](https://travis-ci.com/TranslatorIIPrototypes/bl_lookup)
+
+# Biolink Model lookup service
+
 ## deployment
 
 ### local
