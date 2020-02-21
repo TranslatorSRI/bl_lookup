@@ -4,3 +4,5 @@ pyyaml
 requests
 sanic==19.9.0
 swagger_ui_bundle
+pytest==5.3.5
+pytest-cov==2.8.1
