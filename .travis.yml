@@ -9,6 +9,7 @@ notifications:
     - powen@renci.org
     - bizon@renci.org
     - kebedey@renci.org
+    - patrick@covar.com
 
 # command to install dependencies
 install:
