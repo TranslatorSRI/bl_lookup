@@ -17,12 +17,11 @@ servers:
   - url: "/{{ path }}"
 {% endif -%}
 paths:
-  {%- for endpoint in endpoints %}
-  /bl/{concept}/{{ endpoint.property }}:
+  /bl/{concept}/ancestors:
     get:
       tags:
         - lookup
-      summary: 'Look up {{ endpoint.property }} of concept'
+      summary: 'Return all ancestors (superclasses or superproperties) of concept, based on the BioLink Model YAML.'
       description: ''
       parameters:
         - in: path
@@ -41,18 +40,63 @@ paths:
                 type: array
                 items:
                   type: string
-  {%- endfor %}
+  /bl/{concept}/descendents:
+    get:
+      tags:
+        - lookup
+      summary: 'Return descendants (subclasses or subproperties) of concept, based on the BioLink Model YAML'
+      description: ''
+      parameters:
+        - in: path
+          required: true
+          name: concept
+          default: chemical_substance
+        - in: query
+          name: version
+          default: latest
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /bl/{concept}/lineage:
+    get:
+      tags:
+        - lookup
+      summary: 'Return the ancestors and descendants of concept, based on the BioLink Model YAML'
+      description: ''
+      parameters:
+        - in: path
+          required: true
+          name: concept
+          default: chemical_substance
+        - in: query
+          name: version
+          default: latest
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
   /uri_lookup/{uri}:
     get:
       tags:
         - lookup
-      summary: 'Get slot(s) from uri'
+      summary: 'Given the URI for a property, return the corresponding BioLink Model slot. Checks the Biolink Model YAML for both slot_uri and mappings.'
       description: ''
       parameters:
         - in: path
           required: true
           name: uri
-          example: SEMMEDDB:DISRUPTS
+          example: RO:0002606
         - in: query
           name: version
           default: latest
@@ -69,7 +113,7 @@ paths:
     get:
       tags:
         - lookup
-      summary: 'Get properties for concept'
+      summary: 'Get all properties for concept from the BioLink Model YAML.'
       description: ''
       parameters:
         - in: path
@@ -90,7 +134,7 @@ paths:
     get:
       tags:
         - meta
-      summary: 'Get available Biolink Model versions'
+      summary: 'Get available BioLink Model versions. These values can be used to parameterize other function calls.'
       description: ''
       responses:
         '200':
