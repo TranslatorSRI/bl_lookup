@@ -22,4 +22,4 @@ ADD ./setup.py /home/murphy/setup.py
 RUN pip install -e .
 
 # setup entrypoint
-ENTRYPOINT ["python", "/home/murphy/main.py"]
+ENTRYPOINT ["/home/murphy/main.py"]
