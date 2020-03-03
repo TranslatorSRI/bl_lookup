@@ -24,7 +24,7 @@ Run web server.
 
 ### Docker
 
-You may also download and implement the Docker container located in the Docker hub repo: renciorg\qrw. 
+You may also download and implement the Docker container located in the Docker hub repo: renciorg\bl_lookup. 
 
 ```bash
 cd <code base>
