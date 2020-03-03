@@ -21,15 +21,13 @@ Run web server.
 
     python main.py --host 0.0.0.0 --port 8144
 
-
 ### Docker
 
 You may also download and implement the Docker container located in the Docker hub repo: renciorg\bl_lookup. 
 
 ```bash
 cd <code base>
-docker-compose build
-docker-compose up -d
+docker build -t bl_lookup .
 ```
 #### Launch
     docker run -it \ 
