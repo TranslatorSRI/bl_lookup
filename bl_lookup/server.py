@@ -21,14 +21,17 @@ async def lookup(request, concept, key):
         _data = app.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
+
     try:
         properties = _data['geneology'][concept]
     except KeyError:
         return response.text(f"No concept '{concept}'\n", status=404)
+
     try:
         value = properties[key]
     except KeyError:
         return response.text(f"No property '{key}' for concept '{concept}'\n", status=404)
+
     return response.json(value)
 
 

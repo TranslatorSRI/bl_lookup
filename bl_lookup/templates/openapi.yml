@@ -40,7 +40,7 @@ paths:
                 type: array
                 items:
                   type: string
-  /bl/{concept}/descendents:
+  /bl/{concept}/descendants:
     get:
       tags:
         - lookup

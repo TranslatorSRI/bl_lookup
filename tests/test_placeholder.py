@@ -46,7 +46,7 @@ def test_lookup_descendents():
     param = {'version': 'latest'}
 
     # make a good request
-    request, response = app.test_client.get('/bl/chemical_substance/descendents', params=param)
+    request, response = app.test_client.get('/bl/chemical_substance/descendants', params=param)
 
     # was the request successful
     assert(response.status == 200)
@@ -55,9 +55,9 @@ def test_lookup_descendents():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 3 and '' in ret and '' in ret and '' in ret)
+    assert(len(ret) == 3 and 'metabolite' in ret and 'drug' in ret and 'carbohydrate' in ret)
 
-    # make a bad request
+    # make a bad requ est
     request, response = app.test_client.get('/bl/bad_substance/descendents', params=param)
 
     # was the request successful
