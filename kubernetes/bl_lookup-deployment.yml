@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bl-lookup-deployment
+  labels:
+    service: bl-lookup
+    app: bl-lookup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bl-lookup
+  template:
+    metadata:
+      labels:
+        app: bl-lookup
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bl-lookup
+        image: renciorg/bl_lookup:latest
+        ports:
+          - containerPort: 8145
+            name: http
+        args: [
+          "--model",
+          "https://raw.githubusercontent.com/TranslatorIIPrototypes/biolink-model/moreprefixes/biolink-model.yaml"
+        ]
+      restartPolicy: Always
