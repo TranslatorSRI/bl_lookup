@@ -20,7 +20,7 @@ spec:
       - name: bl-lookup
         image: renciorg/bl_lookup:latest
         ports:
-          - containerPort: 8145
+          - containerPort: 8144
             name: http
         args: [
           "--model",
