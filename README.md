@@ -4,15 +4,15 @@
 
 ## Introduction
 
-The [Biolink Model]("https://biolink.github.io/biolink-model/") defines a set of common concepts for use in Translator. These include semantic types for entities, as well as the relations between them. These concepts are organized into an inheritance hierarchy capturing different granularities of description. Furthermore, each concept contains metadata relating the concept to ontologies.
+The [Biolink Model](https://biolink.github.io/biolink-model/) defines a set of common concepts for use in Translator. These include semantic types for entities, as well as the relations between them. These concepts are organized into an inheritance hierarchy capturing different granularities of description. Furthermore, each concept contains metadata relating the concept to ontologies.
 
-The [Biolink Lookup Service]("https://bl-lookup-sri.renci.org/apidocs/") provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest version.
+The [Biolink Lookup Service](https://bl-lookup-sri.renci.org/apidocs/) provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest version.
 
 ## Use
 
-Most users will not run their own service, but will make use of the publicly provided [service]("https://bl-lookup-sri.renci.org/apidocs/").   Several functions are provided, including the ability to look up concepts by name or URI, or to look up ancestors (superclasses) or descendants (subclasses) of concepts. 
+Most users will not run their own service, but will make use of the publicly provided [service](https://bl-lookup-sri.renci.org/apidocs/).   Several functions are provided, including the ability to look up concepts by name or URI, or to look up ancestors (superclasses) or descendants (subclasses) of concepts. 
 
-Examples of use can be found on the live apidocs page, or in the demonstration jupyter notebook in documentation.
+Examples of use can be found on the live apidocs page, or in the demonstration [notebook](documentation/BiolinkLookup.ipynb).
 
 ## Installation
 
