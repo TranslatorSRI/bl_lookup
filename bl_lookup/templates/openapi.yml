@@ -1,7 +1,9 @@
 openapi: 3.0.2
 info:
   title: Biolink Model Lookup
-  description: 'Utilities for querying the Biolink Model'
+  description: 'The <a href="https://biolink.github.io/biolink-model/">Biolink Model</a> defines a set of common concepts for use in Translator. These include semantic types for entities, as well as the relations between them. These concepts are organized into an inheritance hierarchy capturing different granularities of description. Furthermore, each concept contains metadata relating the concept to ontologies.
+
+The Biolink Lookup Service provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest version.'
   version: '1.0.0'
   contact:
     email: patrick@covar.com
