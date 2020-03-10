@@ -4,6 +4,7 @@ import urllib.parse
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
+from bl_lookup.bl import snake_case
 
 app = Sanic()
 app.config.ACCESS_LOG = False
@@ -22,6 +23,7 @@ async def lookup(request, concept, key):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
+    concept = snake_case(concept)
     try:
         properties = _data['geneology'][concept]
     except KeyError:
@@ -43,6 +45,8 @@ async def properties(request, concept):
         _data = app.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
+
+    concept = snake_case(concept)
     try:
         props = _data['raw'][concept]
     except KeyError:
@@ -58,8 +62,10 @@ async def uri_lookup(request, uri):
         uri_map = app.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
+
+    uri = urllib.parse.unquote(uri)
+    uri = snake_case(uri)
     try:
-        uri = urllib.parse.unquote(uri)
         keys = uri_map[uri]
     except KeyError:
         return response.text(f"No uri '{uri}'\n", status=404)
