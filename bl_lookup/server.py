@@ -64,7 +64,6 @@ async def uri_lookup(request, uri):
         return response.text(f"No version '{version}' available\n", status=404)
 
     uri = urllib.parse.unquote(uri)
-    uri = snake_case(uri)
     try:
         keys = uri_map[uri]
     except KeyError:
