@@ -1,4 +1,4 @@
-bmt
+bmt==0.1.1
 jinja2
 pyyaml
 requests
