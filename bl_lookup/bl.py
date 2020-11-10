@@ -15,13 +15,32 @@ models = {
 }
 
 
+def _snake_case(arg: str):
+    """Convert string to snake_case.
+
+    Non-alphanumeric characters are replaced with _.
+    CamelCase is replaced with snake_case.
+    """
+    tmp = re.sub(r'\W', '_', arg)
+    tmp = re.sub(
+        r'(?<=[a-z])[A-Z](?=[a-z])',
+        lambda c: '_' + c.group(0).lower(),
+        tmp
+    )
+    tmp = re.sub(
+        r'^[A-Z](?=[a-z])',
+        lambda c: c.group(0).lower(), 
+        tmp
+    )
+    return tmp
+
 def snake_case(arg: typing.Union[str, typing.List[str]]):
     """Convert each string or set of strings to snake_case."""
     if isinstance(arg, str):
-        return re.sub(r'\W', '_', arg)
+        return _snake_case(arg)
     elif isinstance(arg, list):
         try:
-            return [re.sub(r'\W', '_', arg) for arg in arg]
+            return [snake_case(arg) for arg in arg]
         except AttributeError:
             raise ValueError()
     else:
