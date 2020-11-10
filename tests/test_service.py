@@ -131,7 +131,7 @@ def test_properties():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 34 and ret['id_prefixes'][0] == 'CHEBI' and ret['definition_uri'] == 'biolink:ChemicalSubstance' and 'molecularly interacts with' in ret['slots'])
+    assert(len(ret) == 45 and ret['id_prefixes'][0] == 'CHEBI' and ret['class_uri'] == 'biolink:ChemicalSubstance' and 'in taxon' in ret['slots'])
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance', params=param)
@@ -153,4 +153,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 2 and '1.2.1' in ret and 'latest' in ret)
+    assert(len(ret) == 1 and 'latest' in ret)
