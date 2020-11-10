@@ -2,14 +2,14 @@ dist: xenial
 
 language: python
 python:
-  - "3.8.3"
+  - "3.8.5"
 
 notifications:
   email:
     - powen@renci.org
-    - bizon@renci.org
-    - kebedey@renci.org
-    - patrick@covar.com
+#    - bizon@renci.org
+#    - kebedey@renci.org
+#    - patrick@covar.com
 
 # command to install dependencies
 install:
