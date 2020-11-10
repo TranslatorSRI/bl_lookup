@@ -1,17 +1,42 @@
 """Biolink model."""
-from collections import defaultdict
-import typing
 import re
-
+import requests
+import typing
+from collections import defaultdict
 from bmt import Toolkit
 from jsonasobj import as_dict
+
+
+def get_latest_bl_model_release_url() -> str:
+    """
+    returns the url for the latest biolink model yaml. raises an Exception if it cant be found
+
+    :return: string, the complete URL for the raw repo data
+    """
+
+    response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases/latest')
+
+    # was it a good response
+    if response.status_code == 200:
+        # get the response
+        result: dict = response.json()
+
+        # get the tag name
+        if 'tag_name' in result and len(result['tag_name']) > 0:
+            # compile the entire URL
+            return f"https://raw.githubusercontent.com/biolink/biolink-model/{result['tag_name']}/biolink-model.yaml"
+        else:
+            raise Exception('Tag name not found in github data.')
+    else:
+        raise Exception('Github API response error.')
+
 
 models = {
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
-    '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
-    'latest': 'https://raw.githubusercontent.com/biolink/biolink-model/master/biolink-model.yaml',
+    # '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
+    'latest': get_latest_bl_model_release_url(),
 }
 
 
