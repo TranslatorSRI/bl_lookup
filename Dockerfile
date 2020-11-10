@@ -1,4 +1,4 @@
-FROM python:3.8.1-buster
+FROM python:3.8.5
 
 # install basic tools
 RUN apt-get update
