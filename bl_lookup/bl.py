@@ -14,7 +14,7 @@ def get_latest_bl_model_release_url() -> str:
     :return: string, the complete URL for the raw repo data
     """
 
-    response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases/latest')
+    response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases/latest')
 
     # was it a good response
     if response.status_code == 200:
@@ -36,7 +36,7 @@ models = {
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
     # '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
-    'latest': get_latest_bl_model_release_url(),
+    'latest': get_latest_bl_model_release_url()
 }
 
 
