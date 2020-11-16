@@ -1,4 +1,4 @@
-FROM python:3.8.1-buster
+FROM python:3.8.5
 
 # install basic tools
 RUN apt-get update
@@ -22,4 +22,4 @@ ADD ./setup.py /home/murphy/setup.py
 RUN pip install -e .
 
 # setup entrypoint
-ENTRYPOINT ["/home/murphy/main.py"]
+ENTRYPOINT ["python", "main.py"]
