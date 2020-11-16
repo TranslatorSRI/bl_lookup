@@ -77,13 +77,13 @@ def generate_bl_map(url=None, version='latest'):
     if url is None:
         url = models[version]
     bmt = Toolkit(url)
-    elements = bmt.descendents('related to') + bmt.descendents('association') + bmt.descendents('named thing') \
+    elements = bmt.get_descendants('related to') + bmt.get_descendants('association') + bmt.get_descendants('named thing') \
         + ['named thing', 'related to', 'association']
     geneology = {
         snake_case(entity_type): {
-            'ancestors': snake_case([a for a in bmt.ancestors(entity_type) if a != entity_type]),
-            'descendants': snake_case(bmt.descendents(entity_type)),
-            'lineage': snake_case(bmt.ancestors(entity_type) + bmt.descendents(entity_type)),
+            'ancestors': snake_case([a for a in bmt.get_ancestors(entity_type) if a != entity_type]),
+            'descendants': snake_case(bmt.get_descendants(entity_type)),
+            'lineage': snake_case(bmt.get_ancestors(entity_type) + bmt.get_descendants(entity_type)),
         }
         for entity_type in elements
     }
