@@ -121,14 +121,6 @@ def generate_bl_map(url=None, version='latest'):
         for key in elements
     }
 
-    import json
-    for x,y in raw.items():
-        try:
-            x = json.dumps(y)
-        except:
-            print('failed',x)
-    print(json.dumps(raw['negativelyregulatesentitytoentity'],indent=4))
-
     inverse_uri_map = {
         bmt.name_to_uri(key): bmt.get_element(key)
         for key in elements
