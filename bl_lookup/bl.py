@@ -108,13 +108,8 @@ def generate_bl_map(url=None, version='latest'):
     }
     for entity_type, ancestors_and_descendants in geneology.items():
         geneology[entity_type]['lineage'] = ancestors_and_descendants['ancestors'] + ancestors_and_descendants['descendants']
-    #To enable lookup by name, snake cased name, and uri:
-    #geneology_snake = { key_case(etype): geneology[etype] for etype in geneology }
-    #geneology_uri = {bmt.name_to_uri(etype): geneology[etype] for etype in geneology }
-    #geneology.update(geneology_snake)
-    #geneology.update(geneology_uri)
     raw = {
-        key_case(key): as_dict(bmt.get_element(key))
+        bmt.name_to_uri(key): as_dict(bmt.get_element(key))
         for key in elements
     }
 

@@ -141,7 +141,7 @@ def test_uri_lookup():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 1 and 'treats' in ret)
+    assert(len(ret) == 1 and 'biolink:treats' in ret)
 
     # make a bad request
     request, response = app.test_client.get('/uri_lookup/RO%3ARO:0002602', params=param)
