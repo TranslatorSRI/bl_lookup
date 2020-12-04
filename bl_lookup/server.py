@@ -4,7 +4,7 @@ import urllib.parse
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
-from bl_lookup.bl import snake_case
+from bl_lookup.bl import key_case
 
 app = Sanic()
 app.config.ACCESS_LOG = False
@@ -23,7 +23,7 @@ async def lookup(request, concept, key):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
-    concept = snake_case(concept)
+    concept = key_case(concept)
     try:
         properties = _data['geneology'][concept]
     except KeyError:
@@ -46,7 +46,7 @@ async def properties(request, concept):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
-    concept = snake_case(concept)
+    concept = key_case(concept)
     try:
         props = _data['raw'][concept]
     except KeyError:

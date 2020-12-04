@@ -15,13 +15,9 @@ app.userdata = {
     'uri_maps': uri_maps,
 }
 
-
-def test_lookup_ancestors():
-    # setup some parameters
-    param = {'version': 'latest'}
-
+def call_successful_test(url,result_set,param):
     # make a good request
-    request, response = app.test_client.get('/bl/chemical_substance/ancestors', params=param)
+    request, response = app.test_client.get(url, params=param)
 
     # was the request successful
     assert(response.status == 200)
@@ -30,48 +26,88 @@ def test_lookup_ancestors():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 3 and 'molecular_entity' in ret and 'biological_entity' in ret and 'named_thing' in ret)
+    assert(set(ret) == result_set)
 
-    # make a bad request
-    request, response = app.test_client.get('/bl/bad_substance/ancestors', params=param)
+def call_unsuccessful_test(url,param):
+    # make a good request
+    request, response = app.test_client.get(url, params=param)
 
     # was the request successful
     assert(response.status == 404)
 
-    # make sure this returned a not found
-    assert(response.body.decode("utf-8")  == "No concept 'bad_substance'\n")
-
-def test_lookup_descendents():
+def test_lookup_ancestors_nodes():
+    """Looking up ancestors should be permissive, you should be able to look up by name with either space or
+    underbars, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
     param = {'version': 'latest'}
+    #All these tests should return the same set of entities
+    expected = set(['biolink:MolecularEntity','biolink:BiologicalEntity','biolink:NamedThing'])
+    #With space
+    call_successful_test('/bl/chemical substance/ancestors',expected,param)
+    #With underbar
+    call_successful_test('/bl/chemical_substance/ancestors',expected,param)
+    #with uri
+    call_successful_test('/bl/biolink:ChemicalSubstance/ancestors',expected,param)
+    #Check (lack of) case sensitivity
+    call_successful_test('/bl/Chemical_Substance/ancestors',expected,param)
+    #But we should get a 404 for an unrecognized node type.
+    call_unsuccessful_test('/bl/bad_substance/ancestors', param)
 
-    # make a good request
-    request, response = app.test_client.get('/bl/chemical_substance/descendants', params=param)
+def test_lookup_ancestors_edges():
+    """Looking up ancestors should be permissive, you should be able to look up by name with either space or
+    underbars, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
+    # setup some parameters
+    param = {'version': 'latest'}
+    #All these tests should return the same set of entities
+    expected = set(['biolink:affects','biolink:related_to'])
+    #With space
+    call_successful_test('/bl/affects_expression_of/ancestors',expected,param)
+    #With underbar
+    call_successful_test('/bl/affects_expression_of/ancestors',expected,param)
+    #with uri
+    call_successful_test('/bl/biolink:affects_expression_of/ancestors',expected,param)
+    #Check (lack of) case sensitivity
+    call_successful_test('/bl/aFFEcts EXPression of/ancestors',expected,param)
 
-    # was the request successful
-    assert(response.status == 200)
+def test_lookup_descendents_class():
+    # setup some parameters
+    param = {'version': 'latest'}
+    #All these tests should return the same set of entities
+    expected = set(['biolink:Disease','biolink:PhenotypicFeature','biolink:DiseaseOrPhenotypicFeature'])
+    #With space
+    call_successful_test('/bl/disease or phenotypic feature/descendants',expected,param)
+    #With underbar
+    call_successful_test('/bl/disease_or_phenotypic_feature/descendants',expected,param)
+    #with uri
+    call_successful_test('/bl/biolink:DiseaseOrPhenotypicFeature/descendants',expected,param)
+    #Check (lack of) case sensitivity
+    call_successful_test('/bl/DiseaseOrpheNOtypiCFEATURE/descendants',expected,param)
+    #But we should get a 404 for an unrecognized node type.
+    call_unsuccessful_test('/bl/bad_substance/descendants', param)
 
-    # convert the response to a json object
-    ret = json.loads(response.body)
+def test_lookup_descendants_edges():
+    """Looking up ancestors should be permissive, you should be able to look up by name with either space or
+    underbars, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
+    # setup some parameters
+    param = {'version': 'latest'}
+    #All these tests should return the same set of entities
+    expected = set(['biolink:affects_expression_of','biolink:increases_expression_of','biolink:decreases_expression_of'])
+    #With space
+    call_successful_test('/bl/affects_expression_of/descendants',expected,param)
+    #With underbar
+    call_successful_test('/bl/affects_expression_of/descendants',expected,param)
+    #with uri
+    call_successful_test('/bl/biolink:affects_expression_of/descendants',expected,param)
+    #Check (lack of) case sensitivity
+    call_successful_test('/bl/aFFEcts EXPression of/descendants',expected,param)
 
-    # check the data
-    assert(len(ret) == 3 and 'metabolite' in ret and 'drug' in ret and 'carbohydrate' in ret)
-
-    # make a bad requ est
-    request, response = app.test_client.get('/bl/bad_substance/descendents', params=param)
-
-    # was the request successful
-    assert(response.status == 404)
-
-    # make sure this returned a not found
-    assert(response.body.decode("utf-8")  == "No concept 'bad_substance'\n")
 
 def test_lookup_lineage():
     # setup some parameters
     param = {'version': 'latest'}
 
     # make a good request
-    request, response = app.test_client.get('/bl/chemical_substance/lineage', params=param)
+    request, response = app.test_client.get('/bl/gene_or_gene_product/lineage', params=param)
 
     # was the request successful
     assert(response.status == 200)
@@ -80,17 +116,16 @@ def test_lookup_lineage():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 7 and 'chemical_substance' in ret and 'molecular_entity' in ret and 'biological_entity' in ret
-                         and 'named_thing' in ret and 'drug' in ret and 'carbohydrate' in ret and 'metabolite' in ret)
+    expected=set(['biolink:Gene','biolink:GeneProduct','biolink:GeneOrGeneProduct','biolink:MolecularEntity',
+                  'biolink:NamedThing','biolink:BiologicalEntity','biolink:GenomicEntity','biolink:GeneProductIsoform',
+                  'biolink:MacromolecularMachine','biolink:Protein','biolink:ProteinIsoform','biolink:Transcript'])
+    assert set(ret) == expected
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance/lineage', params=param)
 
     # was the request successful
     assert(response.status == 404)
-
-    # make sure this returned a not found
-    assert(response.body.decode("utf-8")  == "No concept 'bad_substance'\n")
 
 def test_uri_lookup():
     # setup some parameters
@@ -138,9 +173,6 @@ def test_properties():
 
     # was the request successful
     assert(response.status == 404)
-
-    # make sure this returned a not found
-    assert(response.body.decode("utf-8")  == "No concept 'bad_substance'\n")
 
 def test_versions():
     # make a good request

@@ -40,55 +40,81 @@ models = {
 }
 
 
-def _snake_case(arg: str):
-    """Convert string to snake_case.
+def _key_case(arg: str):
+    """Convert string to key_case.
 
-    Non-alphanumeric characters are replaced with _.
-    CamelCase is replaced with snake_case.
+    Only the non-prefix part of curies is retained
+    all spaces and _ removed
+    then all lowercased
     """
-    tmp = re.sub(r'\W', '_', arg)
-    tmp = re.sub(
-        r'(?<=[a-z])[A-Z](?=[a-z])',
-        lambda c: '_' + c.group(0).lower(),
-        tmp
-    )
-    tmp = re.sub(
-        r'^[A-Z](?=[a-z])',
-        lambda c: c.group(0).lower(), 
-        tmp
-    )
+    tmp = arg.split(':')[-1]
+    tmp = ''.join(tmp.split(' '))
+    tmp = ''.join(tmp.split('_'))
+    tmp = tmp.lower()
     return tmp
 
-def snake_case(arg: typing.Union[str, typing.List[str]]):
-    """Convert each string or set of strings to snake_case."""
+def key_case(arg: typing.Union[str, typing.List[str]]):
+    """Convert each string or set of strings to key_case."""
     if isinstance(arg, str):
-        return _snake_case(arg)
+        return _key_case(arg)
     elif isinstance(arg, list):
         try:
-            return [snake_case(arg) for arg in arg]
+            return [key_case(arg) for arg in arg]
         except AttributeError:
             raise ValueError()
     else:
         raise ValueError()
 
+class bmt_wrapper():
+    """The purpose here is to handle some bugginess of the BMT, especially version 0.3.0"""
+    def __init__(self,bmt):
+        self.bmt = bmt
+    def name_to_uri(self,name):
+        element = self.bmt.get_element(name)
+        if element is None:
+            print('?', element)
+        try:
+            return element.slot_uri
+        except:
+            return element.class_uri
+    def get_element(self, name):
+        return self.bmt.get_element(name)
+    def get_descendants(self,name):
+        elements = self.bmt.get_descendants(name)
+        return self.filter(elements)
+    def get_ancestors(self,name):
+        elements = self.bmt.get_ancestors(name)
+        return self.filter(elements)
+    def filter(self,elements):
+        # bmt 0.3.0 has a bug that is letting in some bogus terms like 'molecular activity_has output'
+        elements = list(filter(lambda x: not '_' in x, elements))
+        # bmt 0.3.0 also has a bug where it it can't find some valid classes:
+        elements = list(filter(lambda x: self.bmt.get_element(x) is not None, elements))
+        return elements
 
 def generate_bl_map(url=None, version='latest'):
     """Generate map (dict) from BiolinkModel."""
     if url is None:
         url = models[version]
-    bmt = Toolkit(url)
+    bmt = bmt_wrapper(Toolkit(url))
     elements = bmt.get_descendants('related to') + bmt.get_descendants('association') + bmt.get_descendants('named thing') \
         + ['named thing', 'related to', 'association']
     geneology = {
-        snake_case(entity_type): {
-            'ancestors': snake_case([a for a in bmt.get_ancestors(entity_type) if a != entity_type]),
-            'descendants': snake_case(bmt.get_descendants(entity_type)),
-            'lineage': snake_case(bmt.get_ancestors(entity_type) + bmt.get_descendants(entity_type)),
+        key_case(entity_type): {
+            'ancestors': [bmt.name_to_uri(a) for a in bmt.get_ancestors(entity_type) if a != entity_type],
+            'descendants': [bmt.name_to_uri(a) for a in bmt.get_descendants(entity_type)],
         }
         for entity_type in elements
     }
+    for entity_type, ancestors_and_descendants in geneology.items():
+        geneology[entity_type]['lineage'] = ancestors_and_descendants['ancestors'] + ancestors_and_descendants['descendants']
+    #To enable lookup by name, snake cased name, and uri:
+    #geneology_snake = { key_case(etype): geneology[etype] for etype in geneology }
+    #geneology_uri = {bmt.name_to_uri(etype): geneology[etype] for etype in geneology }
+    #geneology.update(geneology_snake)
+    #geneology.update(geneology_uri)
     raw = {
-        snake_case(key): as_dict(bmt.get_element(key))
+        key_case(key): as_dict(bmt.get_element(key))
         for key in elements
     }
 
@@ -101,3 +127,6 @@ def generate_bl_map(url=None, version='latest'):
         'raw': raw,
     }
     return data, uri_map
+
+if __name__ == '__main__':
+    generate_bl_map()

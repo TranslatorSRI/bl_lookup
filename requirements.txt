@@ -1,4 +1,4 @@
-bmt==0.2.2
+bmt==0.3.0
 biolinkml==1.6.0
 jinja2==2.11.2
 pyyaml==5.3.1
