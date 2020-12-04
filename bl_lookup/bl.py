@@ -32,10 +32,11 @@ def get_latest_bl_model_release_url() -> str:
 
 
 models = {
+    #These older versions are incompatible with the most recent BMT versions (which are needed for the new models)
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
-    # '1.2.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.2.1/biolink-model.yaml',
+    # '1.3.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.3.0/biolink-model.yaml',
     'latest': get_latest_bl_model_release_url()
 }
 
@@ -50,6 +51,7 @@ def _key_case(arg: str):
     tmp = arg.split(':')[-1]
     tmp = ''.join(tmp.split(' '))
     tmp = ''.join(tmp.split('_'))
+    tmp = ''.join(tmp.split(','))
     tmp = tmp.lower()
     return tmp
 
@@ -74,11 +76,17 @@ class bmt_wrapper():
         if element is None:
             print('?', element)
         try:
-            return element.slot_uri
+            return element['slot_uri']
         except:
-            return element.class_uri
+            return element['class_uri']
     def get_element(self, name):
-        return self.bmt.get_element(name)
+        element = as_dict(self.bmt.get_element(name))
+        #This value is not Json serializable, so we're removing it for now.
+        if 'local_names' in element:
+            del element['local_names']
+        if 'slot_usage' in element:
+            del element['slot_usage']
+        return element
     def get_descendants(self,name):
         elements = self.bmt.get_descendants(name)
         return self.filter(elements)
@@ -109,12 +117,20 @@ def generate_bl_map(url=None, version='latest'):
     for entity_type, ancestors_and_descendants in geneology.items():
         geneology[entity_type]['lineage'] = ancestors_and_descendants['ancestors'] + ancestors_and_descendants['descendants']
     raw = {
-        key_case(key): as_dict(bmt.get_element(key))
+        key_case(key): bmt.get_element(key)
         for key in elements
     }
 
+    import json
+    for x,y in raw.items():
+        try:
+            x = json.dumps(y)
+        except:
+            print('failed',x)
+    print(json.dumps(raw['negativelyregulatesentitytoentity'],indent=4))
+
     inverse_uri_map = {
-        bmt.name_to_uri(key): as_dict(bmt.get_element(key))
+        bmt.name_to_uri(key): bmt.get_element(key)
         for key in elements
     }
     uri_map = defaultdict(list)

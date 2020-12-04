@@ -102,6 +102,19 @@ def test_lookup_descendants_edges():
     call_successful_test('/bl/aFFEcts EXPression of/descendants',expected,param)
 
 
+def test_lookup_with_commas():
+    """How do we do with things like 'negatively regulates, entity to entity'"""
+    # setup some parameters
+    param = {'version': 'latest'}
+    # All these tests should return the same set of entities
+    expected = set(
+        ['biolink:related_to','biolink:regulates_entity_to_entity','biolink:affects','biolink:regulates'])
+    call_successful_test('/bl/negatively_regulates__entity_to_entity/ancestors', expected, param)
+    call_successful_test('/bl/negatively regulates, entity to entity/ancestors', expected, param)
+    #check the lookup as well
+    request, response = app.test_client.get('/bl/negatively_regulates__entity_to_entity', params=param)
+    assert(response.status == 200)
+
 def test_lookup_lineage():
     # setup some parameters
     param = {'version': 'latest'}
@@ -166,7 +179,7 @@ def test_properties():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 45 and ret['id_prefixes'][0] == 'CHEBI' and ret['class_uri'] == 'biolink:ChemicalSubstance' and 'in taxon' in ret['slots'])
+    assert(len(ret) == 43 and ret['id_prefixes'][0] == 'CHEBI' and ret['class_uri'] == 'biolink:ChemicalSubstance' and 'in taxon' in ret['slots'])
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance', params=param)
