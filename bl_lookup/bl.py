@@ -109,12 +109,16 @@ def generate_bl_map(url=None, version='latest'):
     for entity_type, ancestors_and_descendants in geneology.items():
         geneology[entity_type]['lineage'] = ancestors_and_descendants['ancestors'] + ancestors_and_descendants['descendants']
     raw = {
-        bmt.name_to_uri(key): as_dict(bmt.get_element(key))
+        key_case(key): as_dict(bmt.get_element(key))
         for key in elements
     }
 
+    inverse_uri_map = {
+        bmt.name_to_uri(key): as_dict(bmt.get_element(key))
+        for key in elements
+    }
     uri_map = defaultdict(list)
-    for key, value in raw.items():
+    for key, value in inverse_uri_map.items():
         for uri in value.get('mappings', []):
             uri_map[uri].append(key)
     data = {
