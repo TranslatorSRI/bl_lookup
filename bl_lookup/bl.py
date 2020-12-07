@@ -36,7 +36,7 @@ models = {
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
-    # '1.3.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.3.0/biolink-model.yaml',
+    '1.3.9': 'https://raw.githubusercontent.com/biolink/biolink-model/1.3.9/biolink-model.yaml',
     'latest': get_latest_bl_model_release_url()
 }
 
@@ -127,7 +127,11 @@ def generate_bl_map(url=None, version='latest'):
     }
     uri_map = defaultdict(list)
     for key, value in inverse_uri_map.items():
+        #For Versions < 1.4, the term is mappings
         for uri in value.get('mappings', []):
+            uri_map[uri].append(key)
+        #For versions >= 1.4.0, the term is exact_mappings
+        for uri in value.get('exact_mappings', []):
             uri_map[uri].append(key)
     data = {
         'geneology': geneology,
