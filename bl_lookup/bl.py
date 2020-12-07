@@ -129,10 +129,18 @@ def generate_bl_map(url=None, version='latest'):
     for key, value in inverse_uri_map.items():
         #For Versions < 1.4, the term is mappings
         for uri in value.get('mappings', []):
-            uri_map[uri].append(key)
-        #For versions >= 1.4.0, the term is exact_mappings
+            uri_map[uri].append({'mapping_type':'exact', 'mapping':key})
+        #For versions >= 1.4.0, the term is exact_mappings, but there are other kinds
         for uri in value.get('exact_mappings', []):
-            uri_map[uri].append(key)
+            uri_map[uri].append({'mapping_type':'exact', 'mapping':key})
+        for uri in value.get('narrow_mappings', []):
+            uri_map[uri].append({'mapping_type': 'narrow', 'mapping': key})
+        for uri in value.get('broad_mappings', []):
+            uri_map[uri].append({'mapping_type': 'broad', 'mapping': key})
+        for uri in value.get('related_mappings', []):
+            uri_map[uri].append({'mapping_type': 'related', 'mapping': key})
+        for uri in value.get('close_mappings', []):
+            uri_map[uri].append({'mapping_type': 'close', 'mapping': key})
     data = {
         'geneology': geneology,
         'raw': raw,
