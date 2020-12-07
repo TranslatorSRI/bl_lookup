@@ -144,13 +144,13 @@ def test_lookup_lineage():
     # was the request successful
     assert(response.status == 404)
 
-def test_uri_lookup():
+def call_uri_lookup(uri,expected_mapping):
     # setup some parameters
     #works for latest = 1.4.0
     param = {'version': 'latest'}
 
     # make a good request
-    request, response = app.test_client.get('/uri_lookup/RO%3A0002206', params=param)
+    request, response = app.test_client.get(f'/uri_lookup/{uri}', params=param)
 
     # was the request successful
     assert(response.status == 200)
@@ -159,10 +159,18 @@ def test_uri_lookup():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 1 and 'biolink:expressed_in' in ret)
+    assert(len(ret) == 1)
+    assert(ret[0] == expected_mapping)
+
+def test_uri_lookup():
+    call_uri_lookup('RO:0002206',{'mapping':'biolink:expressed_in', 'mapping_type':'exact'})
+    call_uri_lookup('NCIT:gene_product_expressed_in_tissue',{'mapping':'biolink:expressed_in', 'mapping_type':'narrow'})
+    call_uri_lookup('hetio:PRESENTS_DpS',{'mapping':'biolink:has_phenotype', 'mapping_type':'broad'})
+    call_uri_lookup('GOREL:0001010',{'mapping':'biolink:produces', 'mapping_type':'related'})
+    call_uri_lookup('BFO:0000067',{'mapping':'biolink:occurs_in', 'mapping_type':'close'})
 
     # make a bad request
-    request, response = app.test_client.get('/uri_lookup/RO%3ARO:0002602', params=param)
+    request, response = app.test_client.get('/uri_lookup/RO%3ARO:0002602', params={'version':'latest'})
 
     # was the request successful
     assert(response.status == 200)
