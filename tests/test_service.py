@@ -39,19 +39,21 @@ def test_lookup_ancestors_nodes():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underbars, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    param = {'version': 'latest'}
-    #All these tests should return the same set of entities
-    expected = set(['biolink:MolecularEntity','biolink:BiologicalEntity','biolink:NamedThing'])
-    #With space
-    call_successful_test('/bl/chemical substance/ancestors',expected,param)
-    #With underbar
-    call_successful_test('/bl/chemical_substance/ancestors',expected,param)
-    #with uri
-    call_successful_test('/bl/biolink:ChemicalSubstance/ancestors',expected,param)
-    #Check (lack of) case sensitivity
-    call_successful_test('/bl/Chemical_Substance/ancestors',expected,param)
-    #But we should get a 404 for an unrecognized node type.
-    call_unsuccessful_test('/bl/bad_substance/ancestors', param)
+    #The expected answers are version dependent.  On 12/10/2020, latest = 1.4.0
+    versions_and_results = { 'latest':set(['biolink:MolecularEntity','biolink:BiologicalEntity','biolink:NamedThing','biolink:Entity']),
+                             '1.3.9':set(['biolink:MolecularEntity','biolink:BiologicalEntity','biolink:NamedThing']),}
+    for version, expected in versions_and_results.items():
+        param = {'version': version}
+        #With space
+        call_successful_test('/bl/chemical substance/ancestors',expected,param)
+        #With underbar
+        call_successful_test('/bl/chemical_substance/ancestors',expected,param)
+        #with uri
+        call_successful_test('/bl/biolink:ChemicalSubstance/ancestors',expected,param)
+        #Check (lack of) case sensitivity
+        call_successful_test('/bl/Chemical_Substance/ancestors',expected,param)
+        #But we should get a 404 for an unrecognized node type.
+        call_unsuccessful_test('/bl/bad_substance/ancestors', param)
 
 def test_lookup_ancestors_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
@@ -104,16 +106,17 @@ def test_lookup_descendants_edges():
 
 def test_lookup_with_commas():
     """How do we do with things like 'negatively regulates, entity to entity'"""
-    # setup some parameters
-    param = {'version': 'latest'}
-    # All these tests should return the same set of entities
-    expected = set(
-        ['biolink:related_to','biolink:regulates_entity_to_entity','biolink:affects','biolink:regulates'])
-    call_successful_test('/bl/negatively_regulates__entity_to_entity/ancestors', expected, param)
-    call_successful_test('/bl/negatively regulates, entity to entity/ancestors', expected, param)
-    #check the lookup as well
-    request, response = app.test_client.get('/bl/negatively_regulates__entity_to_entity', params=param)
-    assert(response.status == 200)
+    # The expected results are version dependent.
+    # On 12/10/2020, latest = 1.4.0
+    versions_and_results = {'latest': set( ['biolink:related_to','biolink:regulates_entity_to_entity','biolink:affects']),
+                            '1.3.9':set( ['biolink:related_to','biolink:regulates_entity_to_entity','biolink:affects', 'biolink:regulates']) }
+    for version, expected in versions_and_results.items():
+        param = {'version': version}
+        call_successful_test('/bl/negatively_regulates__entity_to_entity/ancestors', expected, param)
+        call_successful_test('/bl/negatively regulates, entity to entity/ancestors', expected, param)
+        #check the lookup as well
+        request, response = app.test_client.get('/bl/negatively_regulates__entity_to_entity', params=param)
+        assert(response.status == 200)
 
 def test_lookup_lineage():
     # setup some parameters
@@ -128,10 +131,11 @@ def test_lookup_lineage():
     # convert the response to a json object
     ret = json.loads(response.body)
 
-    # check the data
+    # check the data.  This set works for version 1.4.0
+    # Keeping these up to date is a nuisance.  What's the right thing to do?
     expected=set(['biolink:Gene','biolink:GeneProduct','biolink:GeneOrGeneProduct','biolink:MolecularEntity',
-                  'biolink:NamedThing','biolink:BiologicalEntity','biolink:GenomicEntity','biolink:GeneProductIsoform',
-                  'biolink:MacromolecularMachine','biolink:Protein','biolink:ProteinIsoform','biolink:Transcript'])
+                  'biolink:NamedThing','biolink:BiologicalEntity','biolink:GenomicEntity',
+                  'biolink:MacromolecularMachine','biolink:Protein','biolink:ProteinIsoform','biolink:Transcript','biolink:Entity'])
     assert set(ret) == expected
 
     # make a bad request
@@ -142,10 +146,11 @@ def test_lookup_lineage():
 
 def test_uri_lookup():
     # setup some parameters
+    #works for latest = 1.4.0
     param = {'version': 'latest'}
 
     # make a good request
-    request, response = app.test_client.get('/uri_lookup/RO%3A0002606', params=param)
+    request, response = app.test_client.get('/uri_lookup/RO%3A0002206', params=param)
 
     # was the request successful
     assert(response.status == 200)
@@ -154,7 +159,7 @@ def test_uri_lookup():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 1 and 'biolink:treats' in ret)
+    assert(len(ret) == 1 and 'biolink:expressed_in' in ret)
 
     # make a bad request
     request, response = app.test_client.get('/uri_lookup/RO%3ARO:0002602', params=param)
@@ -198,4 +203,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 1 and 'latest' in ret)
+    assert(len(ret) == 2 and 'latest' in ret)
