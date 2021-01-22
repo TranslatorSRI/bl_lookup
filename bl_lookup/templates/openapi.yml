@@ -6,11 +6,21 @@ info:
 The Biolink Lookup Service provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest version.'
   version: '1.0.0'
   contact:
-    email: patrick@covar.com
+    email: bizon@renci.org
+    name: Chris Bizon
+    x-id: https://github.com/cbizon
+    x-role: responsible developer
   termsOfService: http://robokop.renci.org:7055/tos?service_long=Biolink+Model+Lookup&provider_long=the+Translator+Consortium
   license:
     name: MIT
     url: 'https://opensource.org/licenses/MIT'
+  x-translator:
+    component: Utility
+    teams:
+      - Standards Reference Implementation Team
+servers:
+  - description: Default server
+    url: https://bl-lookup-sri.renci.org/apidocs/
 tags:
   - name: lookup
   - name: meta
