@@ -16,12 +16,13 @@ The Biolink Lookup Service provides a computational interface to the model, incl
     url: 'https://opensource.org/licenses/MIT'
   x-translator:
     component: Utility
-    teams:
+    team:
       - Standards Reference Implementation Team
 servers:
   - description: Default server
     url: https://bl-lookup-sri.renci.org/apidocs/
 tags:
+  - name: translator
   - name: lookup
   - name: meta
 {% if path is defined -%}
