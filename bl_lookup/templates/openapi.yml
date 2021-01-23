@@ -20,7 +20,7 @@ The Biolink Lookup Service provides a computational interface to the model, incl
       - Standards Reference Implementation Team
 servers:
   - description: Default server
-    url: https://bl-lookup-sri.renci.org/apidocs/
+    url: https://bl-lookup-sri.renci.org/
 tags:
   - name: translator
   - name: lookup
