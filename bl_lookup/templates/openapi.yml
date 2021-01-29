@@ -25,10 +25,6 @@ tags:
   - name: translator
   - name: lookup
   - name: meta
-{% if path is defined -%}
-servers:
-  - url: "/{{ path }}"
-{% endif -%}
 paths:
   /bl/{concept}/ancestors:
     get:
