@@ -42,21 +42,23 @@ def test_lookup_ancestors_nodes():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underbars, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    # The expected answers are version dependent.  On 12/10/2020, latest = 1.4.0
-    versions_and_results = { 'latest': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing',
-                                        'biolink:Entity'},
-                             '1.3.9': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing'}, }
+    # The expected answers are version dependent.  On 3/8/2020, latest = 1.6.0
+    versions_and_results = {'latest': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity'},
+                            '1.3.9': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing'},
+                            '1.4.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'},
+                            '1.5.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'}}
+
     for version, expected in versions_and_results.items():
         param = {'version': version}
-        #With space
+        # With space
         call_successful_test('/bl/chemical substance/ancestors', expected, param)
-        #With underbar
+        # With underbar
         call_successful_test('/bl/chemical_substance/ancestors', expected, param)
-        #with uri
+        # with uri
         call_successful_test('/bl/biolink:ChemicalSubstance/ancestors', expected, param)
-        #Check (lack of) case sensitivity
+        # Check (lack of) case sensitivity
         call_successful_test('/bl/Chemical_Substance/ancestors', expected, param)
-        #But we should get a 404 for an unrecognized node type.
+        # But we should get a 404 for an unrecognized node type.
         call_unsuccessful_test('/bl/bad_substance/ancestors', param)
 
 
@@ -122,10 +124,14 @@ def test_lookup_descendants_edges():
 def test_lookup_with_commas():
     """How do we do with things like 'negatively regulates, entity to entity'"""
     # The expected results are version dependent.
-    # On 12/10/2020, latest = 1.4.0
-    versions_and_results = {'latest': {'biolink:related_to', 'biolink:regulates_entity_to_entity', 'biolink:affects'},
-                            '1.3.9': {'biolink:related_to', 'biolink:regulates_entity_to_entity', 'biolink:affects',
-                                      'biolink:regulates'}}
+
+    # On 3/8/2021 the latest version (1.6.0) no longer supports commas in the querystring. so it has been omitted here.
+    versions_and_results = {
+                            '1.3.9': {'biolink:related_to', 'biolink:regulates_entity_to_entity', 'biolink:affects', 'biolink:regulates'},
+                            '1.4.0': {'biolink:related_to', 'biolink:regulates_entity_to_entity', 'biolink:affects', 'biolink:related_to'},
+                            '1.5.0': {'biolink:related_to', 'biolink:regulates_entity_to_entity', 'biolink:affects', 'biolink:related_to'}
+                            }
+
     for version, expected in versions_and_results.items():
         param = {'version': version}
         call_successful_test('/bl/negatively_regulates__entity_to_entity/ancestors', expected, param)
@@ -249,4 +255,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 2 and 'latest' in ret)
+    assert(len(ret) == 4 and 'latest' in ret)
