@@ -46,7 +46,8 @@ def test_lookup_ancestors_nodes():
     versions_and_results = {'latest': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity'},
                             '1.3.9': {'biolink:MolecularEntity', 'biolink:BiologicalEntity', 'biolink:NamedThing'},
                             '1.4.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'},
-                            '1.5.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'}}
+                            '1.5.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'},
+                            '1.6.0': {'biolink:BiologicalEntity', 'biolink:NamedThing', 'biolink:Entity', 'biolink:MolecularEntity'}}
 
     for version, expected in versions_and_results.items():
         param = {'version': version}
@@ -255,4 +256,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 4 and 'latest' in ret)
+    assert(len(ret) == 5 and 'latest' in ret)
