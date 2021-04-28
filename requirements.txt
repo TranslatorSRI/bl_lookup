@@ -1,5 +1,4 @@
-bmt==0.5.0
-biolinkml==1.7.6
+bmt==0.6.0
 jinja2==2.11.2
 pyyaml==5.3.1
 requests==2.24.0
@@ -8,4 +7,3 @@ swagger_ui_bundle==0.0.6
 pytest==6.1.2
 pytest-cov==2.10.1
 pytest-sanic==1.6.2
-pyshex==0.7.14
