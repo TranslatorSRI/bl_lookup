@@ -1,5 +1,5 @@
 bmt==0.6.0
-jinja2==2.11.2
+jinja2==2.11.3
 pyyaml==5.3.1
 requests==2.24.0
 sanic==20.9.1
