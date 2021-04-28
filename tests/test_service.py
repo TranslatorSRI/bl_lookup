@@ -207,7 +207,9 @@ def call_uri_lookup(uri,expected_mapping):
 
 def test_uri_lookup():
     call_uri_lookup('RO:0002206',{'mapping':'biolink:expressed_in', 'mapping_type':'exact'})
-    call_uri_lookup('NCIT:gene_product_expressed_in_tissue',{'mapping':'biolink:expressed_in', 'mapping_type':'narrow'})
+    #Between 1.6 and 1.8, this changed to NCIT:46
+    #call_uri_lookup('NCIT:gene_product_expressed_in_tissue',{'mapping':'biolink:expressed_in', 'mapping_type':'narrow'})
+    call_uri_lookup('NCIT:R46',{'mapping':'biolink:expressed_in', 'mapping_type':'narrow'})
     call_uri_lookup('hetio:PRESENTS_DpS',{'mapping':'biolink:has_phenotype', 'mapping_type':'broad'})
     call_uri_lookup('GOREL:0001010',{'mapping':'biolink:produces', 'mapping_type':'related'})
     call_uri_lookup('BFO:0000067',{'mapping':'biolink:occurs_in', 'mapping_type':'close'})
@@ -256,4 +258,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 5 and 'latest' in ret)
+    assert(len(ret) == 7 and 'latest' in ret)
