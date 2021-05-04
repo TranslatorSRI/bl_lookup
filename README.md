@@ -47,3 +47,7 @@ docker build -t bl_lookup .
 #### Run Service
 
 http://"host name or IP":"port"/apidocs
+
+#### Helm Charts
+
+Example helm charts for deploying the container in kubernetes can be found [here](https://github.com/helxplatform/translator-devops/tree/master/helm/biolink-lookup)
