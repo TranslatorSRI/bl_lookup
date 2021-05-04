@@ -6,7 +6,7 @@
 
 The [Biolink Model](https://biolink.github.io/biolink-model/) defines a set of common concepts for use in Translator (See [here](https://docs.google.com/spreadsheets/d/1C8hKXacxtQC5UzXI4opQs1r4pBJ_5hqgXrZH_raYQ4w/edit#gid=1581951609) for a Translator glossary). These include semantic types for entities, as well as the relations between them. These concepts are organized into an inheritance hierarchy capturing different granularities of description. Furthermore, each concept contains metadata relating the concept to ontologies.
 
-The [Biolink Lookup Service](https://bl-lookup-sri.renci.org/apidocs/) provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest version.
+The [Biolink Lookup Service](https://bl-lookup-sri.renci.org/apidocs/) provides a computational interface to the model, including access to previous versions.
 
 ## Use
 
