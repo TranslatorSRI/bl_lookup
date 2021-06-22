@@ -1,5 +1,4 @@
 """Biolink model."""
-import re
 import requests
 import typing
 from collections import defaultdict
@@ -44,7 +43,6 @@ models = {
     '1.8.0': 'https://raw.githubusercontent.com/biolink/biolink-model/1.8.0/biolink-model.yaml',
     'latest': get_latest_bl_model_release_url()
 }
-
 
 def _key_case(arg: str):
     """Convert string to key_case.
