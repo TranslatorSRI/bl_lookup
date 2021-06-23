@@ -1,10 +1,9 @@
 """Sanic BL server."""
-import urllib.parse
-
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import key_case
+from urllib.parse import unquote
 
 app = Sanic(name='Biolink Model Lookup')
 app.config.ACCESS_LOG = False
@@ -23,14 +22,14 @@ async def lookup(request, concept, key):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
-    concept = key_case(concept)
+    concept = key_case(unquote(concept))
     try:
         props = _data['geneology'][concept]
     except KeyError:
         return response.text(f"No concept '{concept}'\n", status=404)
 
     try:
-        value = props[key]
+        value = list(dict.fromkeys(props[unquote(key)]))
     except KeyError:
         return response.text(f"No property '{key}' for concept '{concept}'\n", status=404)
 
@@ -46,11 +45,12 @@ async def properties(request, concept):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
-    concept = key_case(concept)
+    concept = key_case(unquote(concept))
     try:
         props = _data['raw'][concept]
     except KeyError:
         return response.text(f"No concept '{concept}'\n", status=404)
+
     return response.json(props)
 
 
@@ -63,11 +63,12 @@ async def uri_lookup(request, uri):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
-    uri = urllib.parse.unquote(uri)
+    uri = unquote(uri)
     try:
         keys = uri_map[uri]
     except KeyError:
         return response.text(f"No uri '{uri}'\n", status=404)
+
     return response.json(keys)
 
 
@@ -94,19 +95,29 @@ async def resolve(request):
     # for each value received
     for predicate in request.args['predicate']:
         # prep and decode the uri
-        uri = urllib.parse.unquote(predicate)
+        uri = unquote(predicate)
 
         try:
             # get the mapped result for the predicate
             mapping = uri_map[uri]
+
+            # was there a result
+            if len(mapping) == 0:
+                raise KeyError
+
         except KeyError:
-            return response.text(f"No uri '{uri}'\n", status=404)
+            return response.text(f"No uri mapping for '{uri}'\n", status=404)
 
         try:
             # get the concepts
             concepts = app.userdata['data'][version]
+
+            # was there a result
+            if len(concepts) == 0:
+                raise KeyError
+
         except KeyError:
-            return response.text(f"No concept for version '{version}' available\n", status=404)
+            return response.text(f"No concepts for version '{version}' available\n", status=404)
 
         # convert the string to a key case
         concept = key_case(mapping[0]['mapping'])
@@ -114,8 +125,13 @@ async def resolve(request):
         try:
             # get the concept properties
             props = concepts['raw'][concept]
+
+            # was there a result
+            if len(props) == 0:
+                raise KeyError
+
         except KeyError:
-            return response.text(f"No concept properties '{concept}'\n", status=404)
+            return response.text(f"No concept properties for '{concept}'\n", status=404)
 
         # did we get everything
         if map and props:
