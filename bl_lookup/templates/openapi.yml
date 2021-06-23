@@ -36,10 +36,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: chemical_substance
+          default: biological_process
         - in: query
           name: version
-          default: latest
+          default: 1.8.0
       responses:
         '200':
           description: successful operation
@@ -59,10 +59,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: chemical_substance
+          default: disease_or_phenotypic_feature
         - in: query
           name: version
-          default: latest
+          default: 1.8.0
       responses:
         '200':
           description: successful operation
@@ -82,10 +82,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: chemical_substance
+          default: biological_process
         - in: query
           name: version
-          default: latest
+          default: 1.8.0
       responses:
         '200':
           description: successful operation
@@ -108,7 +108,7 @@ paths:
           example: RO:0002606
         - in: query
           name: version
-          default: latest
+          default: 1.8.0
       responses:
         '200':
           description: successful operation
@@ -128,10 +128,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: chemical_substance
+          default: biological_process
         - in: query
           name: version
-          default: latest
+          default: 1.8.0
       responses:
         '200':
           description: successful operation
@@ -139,6 +139,46 @@ paths:
             application/json:
               schema:
                 type: object
+
+  /resolve_predicate:
+    get:
+      tags:
+        - lookup
+      summary: 'Resolve predicate CURIE(s) into Biolink model compliant counterpart(s), first checking the BioLink model for
+      exact matches of a CURIE.  If the CURIE is from the Relation Ontology, the service will check its superproperties until
+       an exact match is found.'
+      description: 'Get Biolink model compliant predicate(s) using the passed predicate(s).'
+      parameters:
+        - in: query
+          name: predicate
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+              - SEMMEDDB:CAUSES
+              - RO:0000052
+        - in: query
+          name: version
+          schema:
+            type: string
+            example: "1.8.0"
+      responses:
+        '200':
+          description: Results
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  "SEMMEDDB:CAUSES":
+                    "identifier": "RO:0002410"
+                    "label": "causes"
+                  "RO:0000052":
+                    "identifier": "SEMMEDDB:AFFECTS"
+                    "label": "affects"
+
+
   /versions:
     get:
       tags:
