@@ -7,3 +7,4 @@ swagger_ui_bundle==0.0.8
 pytest==6.2.4
 pytest-cov==2.12.1
 pytest-sanic==1.7.1
+sanic-testing==0.6.0
