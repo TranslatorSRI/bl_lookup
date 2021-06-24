@@ -41,6 +41,7 @@ models = {
     '1.6.0': 'https://raw.githubusercontent.com/biolink/biolink-model/1.6.0/biolink-model.yaml',
     '1.7.0': 'https://raw.githubusercontent.com/biolink/biolink-model/1.7.0/biolink-model.yaml',
     '1.8.0': 'https://raw.githubusercontent.com/biolink/biolink-model/1.8.0/biolink-model.yaml',
+    '2.0.2': 'https://raw.githubusercontent.com/biolink/biolink-model/2.0.2/biolink-model.yaml',
     'latest': get_latest_bl_model_release_url()
 }
 
