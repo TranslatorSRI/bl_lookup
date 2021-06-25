@@ -2,13 +2,12 @@
 from sanic import Sanic, response
 
 from bl_lookup.apidocs import bp as apidocs_blueprint
-from bl_lookup.bl import key_case
+from bl_lookup.bl import key_case, default_version
 from urllib.parse import unquote
 
 app = Sanic(name='Biolink Model Lookup')
 app.config.ACCESS_LOG = False
 app.blueprint(apidocs_blueprint)
-
 
 @app.route('/bl/<concept>/<key>')
 async def lookup(request, concept, key):
@@ -16,7 +15,7 @@ async def lookup(request, concept, key):
 
     e.g. descendants of gene_product
     """
-    version = request.args.get('version', '1.8.0')
+    version = request.args.get('version', default_version)
     try:
         _data = app.userdata['data'][version]
     except KeyError:
@@ -39,7 +38,7 @@ async def lookup(request, concept, key):
 @app.route('/bl/<concept>')
 async def properties(request, concept):
     """Get raw properties for concept."""
-    version = request.args.get('version', '1.8.0')
+    version = request.args.get('version', default_version)
     try:
         _data = app.userdata['data'][version]
     except KeyError:
@@ -57,7 +56,7 @@ async def properties(request, concept):
 @app.route('/uri_lookup/<uri>')
 async def uri_lookup(request, uri):
     """Look up slot by uri."""
-    version = request.args.get('version', '1.8.0')
+    version = request.args.get('version', default_version)
     try:
         uri_map = app.userdata['uri_maps'][version]
     except KeyError:
@@ -84,7 +83,7 @@ async def resolve(request):
     result = {}
 
     # grab the version, default if needed
-    version = request.args.get('version', '1.8.0')
+    version = request.args.get('version', default_version)
 
     try:
         # get the biolink uri map for the version
