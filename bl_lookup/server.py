@@ -4,10 +4,12 @@ from sanic import Sanic, response
 from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import key_case, default_version
 from urllib.parse import unquote
+from bl_lookup.ubergraph import UberGraph
 
 app = Sanic(name='Biolink Model Lookup')
 app.config.ACCESS_LOG = False
 app.blueprint(apidocs_blueprint)
+
 
 @app.route('/bl/<concept>/<key>')
 async def lookup(request, concept, key):
@@ -78,7 +80,6 @@ async def resolve(request):
 
     :return:
     """
-
     # init the result
     result = {}
 
@@ -91,21 +92,74 @@ async def resolve(request):
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
+    # get the class that does ubergraph operations
+    ug = UberGraph()
+
     # for each value received
     for predicate in request.args['predicate']:
         # prep and decode the uri
-        uri = unquote(predicate)
+        predicate = unquote(predicate)
+
+        # init the predicate mapping
+        pred_mapping = None
 
         try:
-            # get the mapped result for the predicate
-            mapping = uri_map[uri]
+            # is we find a value use it
+            if predicate in uri_map:
+                # get the mapped result for the predicate
+                pred_mapping = uri_map[predicate]
+            # otherwise look into ubergraph for it
+            else:
+                # if this is an RO query
+                if predicate.startswith('RO'):
+                    ro_idents = [predicate]
 
-            # was there a result
-            if len(mapping) == 0:
-                raise KeyError
+                    # flag to indicate the value was found
+                    found = False
 
+                    # continue until there are no options left
+                    while True:
+                        new_ros = []
+
+                        # get the RO parents from ubergraph
+                        for ro in ro_idents:
+                            new_ros += ug.get_property_parent(ro)
+
+                        # none found, go with the default
+                        if len(new_ros) == 0:
+                            break
+
+                        # for the ones returned from ubergraph
+                        for ro in new_ros:
+                            # is it in the uri map
+                            if ro in uri_map:
+                                keys = uri_map[ro]
+                            else:
+                                keys = []
+
+                            # was it found
+                            if len(keys) > 0:
+                                found = True
+                                break
+
+                        # was it found
+                        if found:
+                            pred_mapping = uri_map[ro]
+                            break
+
+                        # start the loop over with a new value
+                        ro_idents = new_ros
+
+                    if pred_mapping is None or len(pred_mapping) == 0:
+                        # use the default (related to)
+                        pred_mapping = uri_map['RO:0002093']
         except KeyError:
-            return response.text(f"No uri mapping for '{uri}'\n", status=404)
+            continue
+            # return response.text(f"No uri mapping for '{predicate}'\n", status=404)
+
+        # if we dont have a predicate mapping there is no need to continue
+        if pred_mapping is None or len(pred_mapping) == 0:
+            continue
 
         try:
             # get the concepts
@@ -116,10 +170,11 @@ async def resolve(request):
                 raise KeyError
 
         except KeyError:
-            return response.text(f"No concepts for version '{version}' available\n", status=404)
+            continue
+            # return response.text(f"No concepts for version '{version}' available\n", status=404)
 
         # convert the string to a key case
-        concept = key_case(mapping[0]['mapping'])
+        concept = key_case(pred_mapping[0]['mapping'])
 
         try:
             # get the concept properties
@@ -130,17 +185,24 @@ async def resolve(request):
                 raise KeyError
 
         except KeyError:
-            return response.text(f"No concept properties for '{concept}'\n", status=404)
+            continue
+            # return response.text(f"No concept properties for '{concept}'\n", status=404)
 
         # did we get everything
-        if map and props:
+        if pred_mapping and props:
             # add the dat to the result
             result[predicate] = {
-                'identifier': mapping[0]['mapping'],
+                'identifier': pred_mapping[0]['mapping'],
                 'label': props['name']
             }
 
-    return response.json(result)
+    # if nothing was found set the error
+    if len(result) == 0:
+        ret_status = 404
+    else:
+        ret_status = 200
+
+    return response.json(result, status=ret_status)
 
 
 @app.route('/versions')
