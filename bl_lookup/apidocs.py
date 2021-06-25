@@ -5,7 +5,7 @@ from jinja2 import Environment, PackageLoader, FileSystemLoader
 from sanic import Blueprint, response
 from swagger_ui_bundle import swagger_ui_3_path
 
-from bl_lookup.bl import generate_bl_map
+from bl_lookup.bl import generate_bl_map, default_version
 
 # create swagger_ui directory
 Path('swagger_ui').mkdir(exist_ok=True)
@@ -24,6 +24,10 @@ spec_string = template.render(
         for key in set.union(*list(set(datum.keys()) for datum in data['geneology'].values()))
     ]
 )
+
+# replace the version with the specified default
+spec_string = spec_string.replace('~default version~', default_version)
+
 with open('swagger_ui/openapi.yml', 'w') as f:
     f.write(spec_string)
 
