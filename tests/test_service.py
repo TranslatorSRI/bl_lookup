@@ -122,8 +122,8 @@ def test_lookup_ancestors_nodes():
 
 def test_resolve_predicate():
     param = {'version': version}
-    expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes'},
-                'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to'}}
+    expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes', 'inverted': False},
+                'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
 
     # make a good request
     request, response = app.test_client.get('/resolve_predicate?predicate=SEMMEDDB:CAUSES&predicate=RO:0000052', params=param)
@@ -140,15 +140,49 @@ def test_resolve_predicate():
     call_unsuccessful_test('/resolve_predicate?predicate=couldbeanything', param)
 
 def test_RO_exact():
-    expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes"}}
+    expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002506', expected, param, use_set=False)
 
+def test_inversion():
+    #WIKIDATA_PROPERTY:P828 is the exact map for caused by
+    expected = {"WIKIDATA_PROPERTY:P828": {"identifier": "biolink:causes","label": "causes", "inverted": True}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P828', expected, param, use_set=False)
+
+def test_inversion_old_biolink():
+    #WIKIDATA_PROPERTY:P828 is the exact map for caused by
+    #before biolink 2 there was no inversion
+    expected = {"WIKIDATA_PROPERTY:P828": {"identifier": "biolink:caused_by","label": "caused by", "inverted": False}}
+    param = {'version': '1.8.0'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P828', expected, param, use_set=False)
+
+def test_inversion_narrow_matches():
+    #RO:0001022 is the narrow map for caused by
+    expected = {"RO:0001022": {"identifier": "biolink:causes","label": "causes", "inverted": True}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0001022', expected, param, use_set=False)
+
+def test_inversion_symmetric():
+    #RO:0002610 is correlated with.  It's symmetric so you can't invert it
+    expected = {"RO:0002610": {"identifier": "biolink:correlated_with","label": "correlated with", "inverted": False}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0002610', expected, param, use_set=False)
+
+
 def test_exact_slot_URI_non_RO():
     '''If we have a curie that is not a RO, but is a slot uri, return it as an edge identifier'''
-    expected = {"WIKIDATA_PROPERTY:P2293": {"identifier": "biolink:genetic_association", "label": "genetic association"}}
+    expected = {"WIKIDATA_PROPERTY:P2293": {"identifier": "biolink:genetic_association", "label": "genetic association", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -156,7 +190,7 @@ def test_exact_slot_URI_non_RO():
 
 def test_exact_mapping():
     '''If we have a curie that is a direct mapping, but not a slot uri, return the corresponding slot uri as an edge identifier'''
-    expected = {"SEMMEDDB:PREVENTS": {"identifier": "biolink:prevents", "label": "prevents"}}
+    expected = {"SEMMEDDB:PREVENTS": {"identifier": "biolink:prevents", "label": "prevents", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -165,7 +199,7 @@ def test_exact_mapping():
 def test_RO_sub():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
-    expected = {"RO:0003303": {"identifier": "biolink:causes", "label": "causes"}}
+    expected = {"RO:0003303": {"identifier": "biolink:causes", "label": "causes", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -175,7 +209,7 @@ def test_RO_sub_2():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
     #2049 is indirectly inhibits 2212 is its parent
-    expected = {"RO:0002409": {"identifier": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process"}}
+    expected = {"RO:0002409": {"identifier": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -184,7 +218,7 @@ def test_RO_sub_2():
 def test_RO_bad():
     '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
     we want to hit related_to by fiat.'''
-    expected = {"RO:0002214": {"identifier": "biolink:related_to", "label": "related to"}}
+    expected = {"RO:0002214": {"identifier": "biolink:related_to", "label": "related to", "inverted": False}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
