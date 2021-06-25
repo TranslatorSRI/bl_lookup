@@ -39,7 +39,7 @@ paths:
           default: biological_process
         - in: query
           name: version
-          default: 1.8.0
+          default: ~default version~
       responses:
         '200':
           description: successful operation
@@ -62,7 +62,7 @@ paths:
           default: disease_or_phenotypic_feature
         - in: query
           name: version
-          default: 1.8.0
+          default: ~default version~
       responses:
         '200':
           description: successful operation
@@ -85,7 +85,7 @@ paths:
           default: biological_process
         - in: query
           name: version
-          default: 1.8.0
+          default: ~default version~
       responses:
         '200':
           description: successful operation
@@ -108,7 +108,7 @@ paths:
           example: RO:0002606
         - in: query
           name: version
-          default: 1.8.0
+          default: ~default version~
       responses:
         '200':
           description: successful operation
@@ -131,7 +131,7 @@ paths:
           default: biological_process
         - in: query
           name: version
-          default: 1.8.0
+          default: ~default version~
       responses:
         '200':
           description: successful operation
@@ -162,7 +162,7 @@ paths:
           name: version
           schema:
             type: string
-            example: "1.8.0"
+            example: "~default version~"
       responses:
         '200':
           description: Results
