@@ -18,7 +18,7 @@ app.userdata = {
 app.testing = True
 
 
-def call_successful_test(url, result_set, param):
+def call_successful_test(url, result_set, param, use_set=True):
     # make a good request
     request, response = app.test_client.get(url, params=param)
 
@@ -29,8 +29,10 @@ def call_successful_test(url, result_set, param):
     ret = json.loads(response.body)
 
     # check the data
-    assert(set(ret) == result_set)
-
+    if use_set:
+        assert(set(ret) == result_set)
+    else:
+        assert(ret == result_set)
 
 def call_unsuccessful_test(url, param):
     # make a good request
@@ -102,8 +104,7 @@ def test_lookup_ancestors_nodes():
                                       "biolink:BiologicalEntity",
                                       "biolink:NamedThing",
                                       "biolink:Entity",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-}
+                                      "biolink:PhysicalEssenceOrOccurrent"}}
 
     for vers, expected in versions_and_results.items():
         param = {'version': vers}
@@ -121,7 +122,8 @@ def test_lookup_ancestors_nodes():
 
 def test_resolve_predicate():
     param = {'version': version}
-    expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes'}, 'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to'}}
+    expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes'},
+                'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to'}}
 
     # make a good request
     request, response = app.test_client.get('/resolve_predicate?predicate=SEMMEDDB:CAUSES&predicate=RO:0000052', params=param)
@@ -137,6 +139,55 @@ def test_resolve_predicate():
 
     call_unsuccessful_test('/resolve_predicate?predicate=couldbeanything', param)
 
+def test_RO_exact():
+    expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0002506', expected, param, use_set=False)
+
+def test_exact_slot_URI_non_RO():
+    '''If we have a curie that is not a RO, but is a slot uri, return it as an edge identifier'''
+    expected = {"WIKIDATA_PROPERTY:P2293": {"identifier": "biolink:genetic_association", "label": "genetic association"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P2293', expected, param, use_set=False)
+
+def test_exact_mapping():
+    '''If we have a curie that is a direct mapping, but not a slot uri, return the corresponding slot uri as an edge identifier'''
+    expected = {"SEMMEDDB:PREVENTS": {"identifier": "biolink:prevents", "label": "prevents"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=SEMMEDDB:PREVENTS', expected, param, use_set=False)
+
+def test_RO_sub():
+    '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
+    find one that we can map to BL. '''
+    expected = {"RO:0003303": {"identifier": "biolink:causes", "label": "causes"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0003303', expected, param, use_set=False)
+
+def test_RO_sub_2():
+    '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
+    find one that we can map to BL. '''
+    expected = {"RO:0002448": {"identifier": "biolink:entity_regulates_entity", "label": "entity regulates entity"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0002448', expected, param, use_set=False)
+
+def test_RO_bad():
+    '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
+    we want to hit related_to by fiat.'''
+    expected = {"RO:0002214": {"identifier": "biolink:related_to", "label": "related to"}}
+    param = {'version': 'latest'}
+
+    '''If we have an RO that is an exact match, return an edge with that identfier'''
+    call_successful_test('/resolve_predicate?predicate=RO:0002214', expected, param, use_set=False)
 
 def test_lookup_ancestors_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
