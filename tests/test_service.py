@@ -174,11 +174,12 @@ def test_RO_sub():
 def test_RO_sub_2():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
-    expected = {"RO:0002448": {"identifier": "biolink:entity_regulates_entity", "label": "entity regulates entity"}}
+    #2049 is indirectly inhibits 2212 is its parent
+    expected = {"RO:0002409": {"identifier": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process"}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
-    call_successful_test('/resolve_predicate?predicate=RO:0002448', expected, param, use_set=False)
+    call_successful_test('/resolve_predicate?predicate=RO:0002409', expected, param, use_set=False)
 
 def test_RO_bad():
     '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
