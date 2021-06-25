@@ -100,10 +100,10 @@ async def resolve(request):
         # prep and decode the uri
         predicate = unquote(predicate)
 
-        try:
-            # init the predicate mapping
-            pred_mapping = None
+        # init the predicate mapping
+        pred_mapping = None
 
+        try:
             # is we find a value use it
             if predicate in uri_map:
                 # get the mapped result for the predicate
