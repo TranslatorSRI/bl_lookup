@@ -184,6 +184,26 @@ async def resolve(request):
             if len(props) == 0:
                 raise KeyError
 
+            #We might need to invert the predicate though
+            # There are no canonical directions in biolink before 2.0
+            major_version = version.split('.')[0]
+            if major_version == '1':
+                inverted = False
+            else:
+                #can't invert a symmetric property
+                sym = props['symmetric']
+                if (sym is not None) and sym:
+                    inverted = False
+                else:
+                    annots = props['annotations']
+                    if (annots is not None) and ('biolink:canonical_predicate' in annots) and annots['biolink:canonical_predicate'].value:
+                        #this is the canonical direction, all good
+                        inverted = False
+                    else:
+                        #this is not the canonical direction, and it's not symmetric, we need to flip it (flip it good).
+                        newconcept =  key_case(props['inverse'])
+                        props = concepts['raw'][newconcept]
+                        inverted = True
         except KeyError:
             continue
             # return response.text(f"No concept properties for '{concept}'\n", status=404)
@@ -192,8 +212,9 @@ async def resolve(request):
         if pred_mapping and props:
             # add the dat to the result
             result[predicate] = {
-                'identifier': pred_mapping[0]['mapping'],
-                'label': props['name']
+                'identifier': props['slot_uri'],
+                'label': props['name'],
+                'inverted': inverted
             }
 
     # if nothing was found set the error
