@@ -194,6 +194,9 @@ async def resolve(request):
                 sym = props['symmetric']
                 if (sym is not None) and sym:
                     inverted = False
+                elif props['inverse'] is None:
+                    #Can't invert something with no inverse.
+                    inverted = False
                 else:
                     annots = props['annotations']
                     if (annots is not None) and ('biolink:canonical_predicate' in annots) and annots['biolink:canonical_predicate'].value:
