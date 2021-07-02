@@ -215,6 +215,14 @@ def test_RO_sub_2():
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002409', expected, param, use_set=False)
 
+def test_no_inverse():
+    """CTD:affects_activity_of has an exact map and no inverse.  It shouldn't crash."""
+    expected = {"CTD:affects_activity_of": {"identifier": "biolink:affects_activity_of",
+                               "label": "affects activity of", "inverted": False}}
+    param = {'version': 'latest'}
+    call_successful_test('/resolve_predicate?predicate=CTD:affects_activity_of', expected, param, use_set=False)
+
+
 def test_RO_bad():
     '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
     we want to hit related_to by fiat.'''
