@@ -6,7 +6,7 @@ from bmt import Toolkit
 from jsonasobj import as_dict
 
 # set the default version for the UI and web service calls
-default_version = "1.8.0"
+default_version = "1.8.2"
 
 def get_latest_bl_model_release_url() -> str:
     """
