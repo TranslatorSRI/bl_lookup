@@ -95,6 +95,17 @@ async def resolve(request):
     # get the class that does ubergraph operations
     ug = UberGraph()
 
+    try:
+        # get the concepts
+        concepts = app.userdata['data'][version]
+
+        # was there a result
+        if len(concepts) == 0:
+            raise KeyError
+
+    except KeyError:
+        return response.text(f"No concepts for version '{version}' available\n", status=404)
+
     # for each value received
     for predicate in request.args['predicate']:
         # prep and decode the uri
@@ -157,24 +168,13 @@ async def resolve(request):
             continue
             # return response.text(f"No uri mapping for '{predicate}'\n", status=404)
 
-        # if we dont have a predicate mapping there is no need to continue
+        # if we dont have a predicate mapping yet
         if pred_mapping is None or len(pred_mapping) == 0:
-            continue
-
-        try:
-            # get the concepts
-            concepts = app.userdata['data'][version]
-
-            # was there a result
-            if len(concepts) == 0:
-                raise KeyError
-
-        except KeyError:
-            continue
-            # return response.text(f"No concepts for version '{version}' available\n", status=404)
-
-        # convert the string to a key case
-        concept = key_case(pred_mapping[0]['mapping'])
+            # sometimes a concept comes in as a result of a previous predicate resolution
+            concept = key_case(unquote(predicate))
+        else:
+            # use what we got
+            concept = key_case(pred_mapping[0]['mapping'])
 
         try:
             # get the concept properties
@@ -212,7 +212,7 @@ async def resolve(request):
             # return response.text(f"No concept properties for '{concept}'\n", status=404)
 
         # did we get everything
-        if pred_mapping and props:
+        if props:
             # add the dat to the result
             result[predicate] = {
                 'identifier': props['slot_uri'],
@@ -220,7 +220,7 @@ async def resolve(request):
                 'inverted': inverted
             }
 
-    # if nothing was found set the error
+    # if nothing was found
     if len(result) == 0:
         ret_status = 404
     else:
