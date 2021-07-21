@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/TranslatorIIPrototypes/bl_lookup.svg?branch=master)](https://travis-ci.com/TranslatorIIPrototypes/bl_lookup)
+[![Build Status](https://travis-ci.com/TranslatorSRI/bl_lookup.svg?branch=master)](https://travis-ci.com/TranslatorSRI/bl_lookup)
 
 # Biolink Model lookup service
 
