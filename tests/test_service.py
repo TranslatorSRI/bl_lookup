@@ -127,6 +127,14 @@ def test_lookup_ancestors_nodes():
         # But we should get a 404 for an unrecognized node type.
         call_unsuccessful_test('/bl/bad_substance/ancestors', param)
 
+def test_lookup_ancestors_mixin():
+    """In 2.x, genomic entity became a mixin, and looking up its ancestors began to fail"""
+    # setup some parameters
+    param = {'version': '2.1.0'}
+    # All these tests should return the same set of entities
+    expected = {'biolink:ThingWithTaxon'}
+    # With space
+    call_successful_test('/bl/genomic_entity/ancestors', expected, param)
 
 def test_resolve_predicate():
     param = {'version': version}
