@@ -109,13 +109,26 @@ class bmt_wrapper():
         elements = list(filter(lambda x: self.bmt.get_element(x) is not None, elements))
         return elements
 
+def get_all_mixins(bmt):
+    tk = bmt.bmt
+    all_elements = tk.get_all_elements()
+    mixins = []
+    for element in all_elements:
+        try:
+            if bmt.get_element(element)['mixin']:
+                mixins.append(element)
+        except:
+            pass
+    return mixins
+
+
 def generate_bl_map(url=None, version='latest'):
     """Generate map (dict) from BiolinkModel."""
     if url is None:
         url = models[version]
     bmt = bmt_wrapper(Toolkit(url))
     elements = bmt.get_descendants('related to') + bmt.get_descendants('association') + bmt.get_descendants('named thing') \
-        + ['named thing', 'related to', 'association']
+        + ['named thing', 'related to', 'association'] + get_all_mixins(bmt)
     geneology = {
         key_case(entity_type): {
             'ancestors': [bmt.name_to_uri(a) for a in bmt.get_ancestors(entity_type) if a != entity_type],
