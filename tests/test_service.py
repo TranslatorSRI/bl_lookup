@@ -153,7 +153,25 @@ def test_resolve_predicate():
     # check the data
     assert (ret == expected)
 
-    call_unsuccessful_test('/resolve_predicate?predicate=couldbeanything', param)
+    #No no, this should return related_to, see "test_resolve_crap_predicate"
+    #call_unsuccessful_test('/resolve_predicate?predicate=couldbeanything', param)
+
+def test_resolve_crap_predicate():
+    """No matter what you send in, it's a related to"""
+    param = {'version': '2.2.3'}
+    expected = {'GARBAGE:NOTHING': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
+
+    # make a good request
+    request, response = app.test_client.get('/resolve_predicate?predicate=GARBAGE:NOTHING', params=param)
+
+    # was the request successful
+    assert (response.status_code == 200)
+
+    # convert the response to a json object
+    ret = json.loads(response.body)
+
+    # check the data
+    assert (ret == expected)
 
 def test_RO_exact():
     expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes", "inverted": False}}
