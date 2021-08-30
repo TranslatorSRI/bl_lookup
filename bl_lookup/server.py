@@ -208,8 +208,12 @@ async def resolve(request):
                         props = concepts['raw'][newconcept]
                         inverted = True
         except KeyError:
+            result[predicate] = {
+                'identifier': 'biolink:related_to',
+                'label': 'related to',
+                'inverted': False
+            }
             continue
-            # return response.text(f"No concept properties for '{concept}'\n", status=404)
 
         # did we get everything
         if props:
