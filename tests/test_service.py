@@ -1,4 +1,3 @@
-import pytest
 import json
 from bl_lookup.server import app
 from bl_lookup.bl import models, generate_bl_map
@@ -119,13 +118,14 @@ def test_lookup_ancestors_nodes():
                                       "biolink:Entity",
                                       "biolink:OntologyClass",
                                       "biolink:PhysicalEssenceOrOccurrent"},
-                            '2.2.1': {"biolink:Occurrent",
-                                    "biolink:BiologicalProcessOrActivity",
-                                    "biolink:BiologicalEntity",
-                                    "biolink:NamedThing",
-                                    "biolink:Entity",
-                                    "biolink:OntologyClass",
-                                    "biolink:PhysicalEssenceOrOccurrent"}}
+                            '2.2.3': {"biolink:Occurrent",
+                                      "biolink:BiologicalProcessOrActivity",
+                                      "biolink:BiologicalEntity",
+                                      "biolink:NamedThing",
+                                      "biolink:Entity",
+                                      "biolink:OntologyClass",
+                                      "biolink:PhysicalEssenceOrOccurrent"}
+    }
 
     for vers, expected in versions_and_results.items():
         param = {'version': vers}
@@ -189,7 +189,7 @@ def test_resolve_crap_predicate():
 
 def test_RO_exact():
     expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002506', expected, param, use_set=False)
@@ -222,7 +222,7 @@ def test_inversion_narrow_matches():
 def test_inversion_symmetric():
     #RO:0002610 is correlated with.  It's symmetric so you can't invert it
     expected = {"RO:0002610": {"identifier": "biolink:correlated_with","label": "correlated with", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002610', expected, param, use_set=False)
@@ -231,7 +231,7 @@ def test_inversion_symmetric():
 def test_exact_slot_URI_non_RO():
     '''If we have a curie that is not a RO, but is a slot uri, return it as an edge identifier'''
     expected = {"WIKIDATA_PROPERTY:P2293": {"identifier": "biolink:genetic_association", "label": "genetic association", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P2293', expected, param, use_set=False)
@@ -239,7 +239,7 @@ def test_exact_slot_URI_non_RO():
 def test_exact_mapping():
     '''If we have a curie that is a direct mapping, but not a slot uri, return the corresponding slot uri as an edge identifier'''
     expected = {"SEMMEDDB:PREVENTS": {"identifier": "biolink:prevents", "label": "prevents", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=SEMMEDDB:PREVENTS', expected, param, use_set=False)
@@ -248,7 +248,7 @@ def test_RO_sub():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
     expected = {"RO:0003303": {"identifier": "biolink:causes", "label": "causes", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0003303', expected, param, use_set=False)
@@ -258,7 +258,7 @@ def test_RO_sub_2():
     find one that we can map to BL. '''
     #2049 is indirectly inhibits 2212 is its parent
     expected = {"RO:0002409": {"identifier": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002409', expected, param, use_set=False)
@@ -267,7 +267,7 @@ def test_no_inverse():
     """CTD:affects_activity_of has an exact map and no inverse.  It shouldn't crash."""
     expected = {"CTD:affects_activity_of": {"identifier": "biolink:affects_activity_of",
                                "label": "affects activity of", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
     call_successful_test('/resolve_predicate?predicate=CTD:affects_activity_of', expected, param, use_set=False)
 
 
@@ -275,7 +275,7 @@ def test_RO_bad():
     '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
     we want to hit related_to by fiat.'''
     expected = {"RO:0002214": {"identifier": "biolink:related_to", "label": "related to", "inverted": False}}
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002214', expected, param, use_set=False)
@@ -284,7 +284,7 @@ def test_lookup_ancestors_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underscores, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
     # All these tests should return the same set of entities
     expected = {'biolink:affects', 'biolink:related_to'}
     # With space
@@ -299,7 +299,7 @@ def test_lookup_ancestors_edges():
 
 def test_lookup_descendents_class():
     # setup some parameters
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
     # All these tests should return the same set of entities
     expected = {'biolink:BehavioralFeature',
                  'biolink:ClinicalFinding',
@@ -323,7 +323,7 @@ def test_lookup_descendants_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underscores, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
     # All these tests should return the same set of entities
     expected = {'biolink:affects_expression_of', 'biolink:increases_expression_of', 'biolink:decreases_expression_of'}
     # With space
@@ -371,7 +371,7 @@ def test_lookup_with_commas():
 
 def test_lookup_lineage():
     # setup some parameters
-    param = {'version': '2.2.1'}
+    param = {'version': '2.2.3'}
 
     # make a good request
     request, response = app.test_client.get('/bl/biological_process/lineage', params=param)
@@ -385,17 +385,17 @@ def test_lookup_lineage():
     # check the data.  This set works for version 1.4.0
     # Keeping these up to date is a nuisance.  What's the right thing to do?
     expected = {'biolink:Behavior',
-                 'biolink:BiologicalEntity',
-                 'biolink:BiologicalProcess',
-                 'biolink:BiologicalProcessOrActivity',
-                 'biolink:Entity',
-                 'biolink:NamedThing',
-                 'biolink:Occurrent',
-                 'biolink:OntologyClass',
-                 'biolink:PathologicalProcess',
-                 'biolink:Pathway',
-                 'biolink:PhysicalEssenceOrOccurrent',
-                 'biolink:PhysiologicalProcess'}
+     'biolink:BiologicalEntity',
+     'biolink:BiologicalProcess',
+     'biolink:BiologicalProcessOrActivity',
+     'biolink:Entity',
+     'biolink:NamedThing',
+     'biolink:Occurrent',
+     'biolink:OntologyClass',
+     'biolink:PathologicalProcess',
+     'biolink:Pathway',
+     'biolink:PhysicalEssenceOrOccurrent',
+     'biolink:PhysiologicalProcess'}
 
     assert set(ret) == expected
 
@@ -408,7 +408,8 @@ def test_lookup_lineage():
 
 def call_uri_lookup(uri, expected_mapping):
     # setup some parameters
-    param = {'version': '2.2.1'}
+    # works for latest = 1.4.0
+    param = {'version': '2.2.3'}
 
     # make a good request
     request, response = app.test_client.get(f'/uri_lookup/{uri}', params=param)
