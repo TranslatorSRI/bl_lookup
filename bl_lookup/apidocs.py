@@ -14,8 +14,11 @@ Path('swagger_ui').mkdir(exist_ok=True)
 env = Environment(
     loader=PackageLoader('bl_lookup', 'templates')
 )
+
 template = env.get_template('openapi.yml')
+
 data, _ = generate_bl_map()
+
 spec_string = template.render(
     endpoints=[
         {
