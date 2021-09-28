@@ -68,14 +68,14 @@ def get_models() -> (dict):
 
     # do we need to get the model versions
     if not models_loaded:
-        # set flag so this is not done again
-        models_loaded = True
-
         # get all the biolink model versions
         response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases')
 
         # did we get the model versions
         if response.status_code == 200:
+            # set flag so this is not done again
+            models_loaded = True
+
             # get the response
             result: dict = response.json()
 
