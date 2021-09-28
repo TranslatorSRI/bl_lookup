@@ -54,25 +54,45 @@ models = {
     'latest': get_latest_bl_model_release_url()
 }
 
+# flag to indicate that the biolink models have been loaded
 models_loaded = False
 
 def get_models() -> (dict):
+    """
+    gets the biolink model versions
+
+    :return: a dict of the available versions
+    """
+    # get the flag that indicates we already loaded the model versions
     global models_loaded
 
+    # do we need to get the model versions
     if not models_loaded:
+        # set flag so this is not done again
         models_loaded = True
 
+        # get all the biolink model versions
         response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases')
 
+        # did we get the model versions
         if response.status_code == 200:
             # get the response
             result: dict = response.json()
+
+            # clear out any thing already saved
             models.clear()
+
+            # for each model version
             for item in result:
+                # get the version number
                 version = item['html_url'].split('/')[-1]
+
+                # is this one that we want
                 if version not in skip_versions:
+                    # save the version in the dict
                     models.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/biolink-model.yaml'})
 
+            # tack on the latest version
             models.update({'latest': get_latest_bl_model_release_url()})
 
 
