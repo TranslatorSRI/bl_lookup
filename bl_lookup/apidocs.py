@@ -1,10 +1,9 @@
 """BL API docs."""
+import os
 from pathlib import Path
-
 from jinja2 import Environment, PackageLoader, FileSystemLoader
 from sanic import Blueprint, response
 from swagger_ui_bundle import swagger_ui_3_path
-
 from bl_lookup.bl import generate_bl_map, default_version
 
 # create swagger_ui directory
@@ -16,6 +15,7 @@ env = Environment(
 )
 
 template = env.get_template('openapi.yml')
+server_root = os.environ.get('SERVER_ROOT', "")
 
 data, _ = generate_bl_map()
 
@@ -30,6 +30,9 @@ spec_string = template.render(
 
 # replace the version with the specified default
 spec_string = spec_string.replace('~default version~', default_version)
+
+# replace the server root specification
+spec_string = spec_string.replace('~server root~', server_root)
 
 with open('swagger_ui/openapi.yml', 'w') as f:
     f.write(spec_string)
