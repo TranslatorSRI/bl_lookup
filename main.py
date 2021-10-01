@@ -13,6 +13,7 @@ args = parser.parse_args()
 
 data = dict()
 uri_maps = dict()
+
 for version in models:
     data[version], uri_maps[version] = generate_bl_map(version=version)
 if args.model is not None:

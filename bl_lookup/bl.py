@@ -1,4 +1,4 @@
-"""Biolink model."""
+import os
 import requests
 import typing
 from collections import defaultdict
@@ -6,7 +6,11 @@ from bmt import Toolkit
 from jsonasobj import as_dict
 
 # set the default version for the UI and web service calls
-default_version = "2.2.3"
+default_version = os.environ.get('DEFAULT_VERSION', "2.2.3")
+
+# do not load these versions
+skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0']
+
 
 def get_latest_bl_model_release_url() -> str:
     """
@@ -14,7 +18,6 @@ def get_latest_bl_model_release_url() -> str:
 
     :return: string, the complete URL for the raw repo data
     """
-
     response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases/latest')
 
     # was it a good response
@@ -33,7 +36,7 @@ def get_latest_bl_model_release_url() -> str:
 
 
 models = {
-    #These older versions are incompatible with the most recent BMT versions (which are needed for the new models)
+    # These older versions are incompatible with the most recent BMT versions (which are needed for the new models)
     # '1.0.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.0.0/biolink-model.yaml',
     # '1.1.0': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.0/biolink-model.yaml',
     # '1.1.1': 'https://raw.githubusercontent.com/biolink/biolink-model/v1.1.1/biolink-model.yaml',
@@ -51,6 +54,48 @@ models = {
     'latest': get_latest_bl_model_release_url()
 }
 
+# flag to indicate that the biolink models have been loaded
+models_loaded = False
+
+def get_models() -> (dict):
+    """
+    gets the biolink model versions
+
+    :return: a dict of the available versions
+    """
+    # get the flag that indicates we already loaded the model versions
+    global models_loaded
+
+    # do we need to get the model versions
+    if not models_loaded:
+        # get all the biolink model versions
+        response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases')
+
+        # did we get the model versions
+        if response.status_code == 200:
+            # set flag so this is not done again
+            models_loaded = True
+
+            # get the response
+            result: dict = response.json()
+
+            # clear out any thing already saved
+            models.clear()
+
+            # for each model version
+            for item in result:
+                # get the version number
+                version = item['html_url'].split('/')[-1]
+
+                # is this one that we want
+                if version not in skip_versions:
+                    # save the version in the dict
+                    models.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/biolink-model.yaml'})
+
+            # tack on the latest version
+            models.update({'latest': get_latest_bl_model_release_url()})
+
+
 def _key_case(arg: str):
     """Convert string to key_case.
 
@@ -65,6 +110,7 @@ def _key_case(arg: str):
     tmp = tmp.lower()
     return tmp
 
+
 def key_case(arg: typing.Union[str, typing.List[str]]):
     """Convert each string or set of strings to key_case."""
     if isinstance(arg, str):
@@ -77,11 +123,14 @@ def key_case(arg: typing.Union[str, typing.List[str]]):
     else:
         raise ValueError()
 
+
 class bmt_wrapper():
     """The purpose here is to handle some bugginess of the BMT, especially version 0.3.0"""
-    def __init__(self,bmt):
+
+    def __init__(self, bmt):
         self.bmt = bmt
-    def name_to_uri(self,name):
+
+    def name_to_uri(self, name):
         element = self.bmt.get_element(name)
         if element is None:
             print('?', element)
@@ -89,26 +138,31 @@ class bmt_wrapper():
             return element['slot_uri']
         except:
             return element['class_uri']
+
     def get_element(self, name):
         element = as_dict(self.bmt.get_element(name))
-        #This value is not Json serializable, so we're removing it for now.
+        # This value is not Json serializable, so we're removing it for now.
         if 'local_names' in element:
             del element['local_names']
         if 'slot_usage' in element:
             del element['slot_usage']
         return element
-    def get_descendants(self,name):
+
+    def get_descendants(self, name):
         elements = self.bmt.get_descendants(name)
         return self.filter(elements)
-    def get_ancestors(self,name):
+
+    def get_ancestors(self, name):
         elements = self.bmt.get_ancestors(name)
         return self.filter(elements)
-    def filter(self,elements):
+
+    def filter(self, elements):
         # bmt 0.3.0 has a bug that is letting in some bogus terms like 'molecular activity_has output'
         elements = list(filter(lambda x: not '_' in x, elements))
         # bmt 0.3.0 also has a bug where it it can't find some valid classes:
         elements = list(filter(lambda x: self.bmt.get_element(x) is not None, elements))
         return elements
+
 
 def get_all_mixins(bmt):
     tk = bmt.bmt
@@ -125,11 +179,13 @@ def get_all_mixins(bmt):
 
 def generate_bl_map(url=None, version='latest'):
     """Generate map (dict) from BiolinkModel."""
+    get_models()
+
     if url is None:
         url = models[version]
     bmt = bmt_wrapper(Toolkit(url))
     elements = bmt.get_descendants('related to') + bmt.get_descendants('association') + bmt.get_descendants('named thing') \
-        + ['named thing', 'related to', 'association'] + get_all_mixins(bmt)
+               + ['named thing', 'related to', 'association'] + get_all_mixins(bmt)
     geneology = {
         key_case(entity_type): {
             'ancestors': [bmt.name_to_uri(a) for a in bmt.get_ancestors(entity_type) if a != entity_type],
@@ -150,12 +206,12 @@ def generate_bl_map(url=None, version='latest'):
     }
     uri_map = defaultdict(list)
     for key, value in inverse_uri_map.items():
-        #For Versions < 1.4, the term is mappings
+        # For Versions < 1.4, the term is mappings
         for uri in value.get('mappings', []):
-            uri_map[uri].append({'mapping_type':'exact', 'mapping':key})
-        #For versions >= 1.4.0, the term is exact_mappings, but there are other kinds
+            uri_map[uri].append({'mapping_type': 'exact', 'mapping': key})
+        # For versions >= 1.4.0, the term is exact_mappings, but there are other kinds
         for uri in value.get('exact_mappings', []):
-            uri_map[uri].append({'mapping_type':'exact', 'mapping':key})
+            uri_map[uri].append({'mapping_type': 'exact', 'mapping': key})
         for uri in value.get('narrow_mappings', []):
             uri_map[uri].append({'mapping_type': 'narrow', 'mapping': key})
         for uri in value.get('broad_mappings', []):
@@ -169,6 +225,7 @@ def generate_bl_map(url=None, version='latest'):
         'raw': raw,
     }
     return data, uri_map
+
 
 if __name__ == '__main__':
     generate_bl_map()
