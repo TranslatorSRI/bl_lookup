@@ -458,7 +458,7 @@ def test_properties():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 45 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
+    assert(len(ret) == 54 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance', params=param)
@@ -478,4 +478,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 20 and 'latest' in ret)
+    assert(len(ret) == 22 and 'latest' in ret)

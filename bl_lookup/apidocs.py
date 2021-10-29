@@ -34,6 +34,12 @@ spec_string = spec_string.replace('~default version~', default_version)
 # replace the server root specification
 spec_string = spec_string.replace('~server root~', server_root)
 
+# replace the x-maturity with the specified default
+spec_string = spec_string.replace('~x maturity~', os.environ.get("MATURITY_VALUE", "production"))
+
+# replace the x-maturity with the specified default
+spec_string = spec_string.replace('~location~', os.environ.get("LOCATION_VALUE", "RENCI"))
+
 with open('swagger_ui/openapi.yml', 'w') as f:
     f.write(spec_string)
 
