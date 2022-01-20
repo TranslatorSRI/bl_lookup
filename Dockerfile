@@ -1,25 +1,24 @@
-FROM python:3.8.5
+# leverage the renci python base image
+FROM renciorg/renci-python-image:v0.0.1
 
-# install basic tools
-RUN apt-get update
-RUN apt-get install -yq \
-    vim
+# set up working directory
+RUN mkdir /home/nru
+WORKDIR /home/nru
 
-# set up murphy
-RUN mkdir /home/murphy
-ENV HOME=/home/murphy
-ENV USER=murphy
-WORKDIR /home/murphy
+# make sure all is writeable for the USER later on
+RUN chmod -R 777 .
 
-# install requirements
-ADD ./requirements.txt /home/murphy/requirements.txt
-RUN pip install -r /home/murphy/requirements.txt --src /usr/local/src
+# install python package requirements
+ADD ./requirements.txt /home/nru/requirements.txt
+RUN pip install -r /home/nru/requirements.txt --src /usr/local/src
 
-# install library
-ADD ./bl_lookup /home/murphy/bl_lookup
-ADD ./main.py /home/murphy/main.py
-ADD ./setup.py /home/murphy/setup.py
-RUN pip install -e .
+# switch to the non-root user (nru). defined in the base image
+USER nru
 
-# setup entrypoint
+# install code
+ADD ./bl_lookup /home/nru/bl_lookup
+ADD ./main.py /home/nru/main.py
+ADD ./setup.py /home/nru/setup.py
+
+# define entrypoint
 ENTRYPOINT ["python", "main.py"]
