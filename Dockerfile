@@ -5,7 +5,7 @@ FROM renciorg/renci-python-image:v0.0.1
 RUN mkdir /home/nru
 WORKDIR /home/nru
 
-# make sure all is writeable for the USER later on
+# make sure all is writeable for the nru USER later on
 RUN chmod -R 777 .
 
 # install python package requirements
@@ -20,5 +20,5 @@ ADD ./bl_lookup /home/nru/bl_lookup
 ADD ./main.py /home/nru/main.py
 ADD ./setup.py /home/nru/setup.py
 
-# define entrypoint
+# define the startup entrypoint
 ENTRYPOINT ["python", "main.py"]
