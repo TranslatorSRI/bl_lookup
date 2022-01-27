@@ -478,4 +478,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 22 and 'latest' in ret)
+    assert(len(ret) == 28 and 'latest' in ret)
