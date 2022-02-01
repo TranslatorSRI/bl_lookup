@@ -198,8 +198,8 @@ async def resolve(request):
                     #Can't invert something with no inverse.
                     inverted = False
                 else:
-                    annots = props['annotations']
-                    if (annots is not None) and ('biolink:canonical_predicate' in annots) and annots['biolink:canonical_predicate'].value:
+                    #annots = props['annotations']
+                    if 'biolink:canonical_predicate' in props and props['biolink:canonical_predicate'].upper() == 'TRUE':
                         #this is the canonical direction, all good
                         inverted = False
                     else:
