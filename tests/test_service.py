@@ -369,6 +369,17 @@ def test_lookup_with_commas():
         assert (response.status_code == 200)
 
 
+def test_lookup_related_to():
+    # setup some parameters
+    param = {'version': '2.2.5'}
+
+    # make a good request
+    #request, response = app.test_client.get('/bl/related_to', params=param)
+    request, response = app.test_client.get('/bl/acts_upstream_of', params=param)
+
+    # was the request successful
+    assert(response.status_code == 200)
+
 def test_lookup_lineage():
     # setup some parameters
     param = {'version': '2.2.3'}
@@ -458,7 +469,7 @@ def test_properties():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 54 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
+    assert(len(ret) == 53 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance', params=param)

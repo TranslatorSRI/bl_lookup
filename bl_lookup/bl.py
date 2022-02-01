@@ -146,6 +146,14 @@ class bmt_wrapper():
             del element['local_names']
         if 'slot_usage' in element:
             del element['slot_usage']
+        #Annotations are also not JSON serializable.  The current structure is:
+        # 'annotations': annotations={'biolink:canonical_predicate':
+        # Annotation(tag='biolink:canonical_predicate', value='True', extensions={}, annotations={})}
+        # And we want to turn that into "Tag":"Value"
+        if 'annotations' in element:
+            for k,v in element['annotations'].items():
+                element[v['tag']] = v['value']
+            del element['annotations']
         return element
 
     def get_descendants(self, name):
