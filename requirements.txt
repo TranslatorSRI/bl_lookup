@@ -1,3 +1,7 @@
+#linkml and black just here to set versions.  Once bmt is fixed, this can go away
+linkml==1.1.17
+black<=21.12b0
+#Real stuff starts here
 bmt==0.8.1
 jinja2==3.0.1
 pyyaml==5.1
@@ -9,4 +13,3 @@ pytest-cov==2.12.1
 pytest-sanic==1.7.1
 httpx==0.15.4
 httpcore==0.11.1
-linkml==1.1.17
