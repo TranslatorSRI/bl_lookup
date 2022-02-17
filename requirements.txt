@@ -6,7 +6,7 @@ bmt==0.8.1
 jinja2==3.0.1
 pyyaml==5.1
 requests==2.26.0
-sanic==20.9.1
+sanic==20.12.6
 swagger_ui_bundle==0.0.8
 pytest==6.2.4
 pytest-cov==2.12.1
