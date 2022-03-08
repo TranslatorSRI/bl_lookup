@@ -20,5 +20,7 @@ ADD ./bl_lookup /home/nru/bl_lookup
 ADD ./main.py /home/nru/main.py
 ADD ./setup.py /home/nru/setup.py
 
+EXPOSE 8144
+
 # define the startup entrypoint
 ENTRYPOINT ["python", "main.py"]
