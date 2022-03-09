@@ -469,7 +469,7 @@ def test_properties():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 53 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
+    assert(len(ret) == 61 and ret['id_prefixes'][0] == 'PUBCHEM.COMPOUND' and ret['class_uri'] == 'biolink:SmallMolecule' and 'is metabolite' in ret['slots'])
 
     # make a bad request
     request, response = app.test_client.get('/bl/bad_substance', params=param)
