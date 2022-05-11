@@ -39,10 +39,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: biological_process
+          example: biological_process
         - in: query
           name: version
-          default: ~default version~
+          example: ~default version~
       responses:
         '200':
           description: successful operation
@@ -62,10 +62,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: disease_or_phenotypic_feature
+          example: disease_or_phenotypic_feature
         - in: query
           name: version
-          default: ~default version~
+          example: ~default version~
       responses:
         '200':
           description: successful operation
@@ -85,10 +85,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: biological_process
+          example: biological_process
         - in: query
           name: version
-          default: ~default version~
+          example: ~default version~
       responses:
         '200':
           description: successful operation
@@ -111,7 +111,7 @@ paths:
           example: RO:0002606
         - in: query
           name: version
-          default: ~default version~
+          example: ~default version~
       responses:
         '200':
           description: successful operation
@@ -131,10 +131,10 @@ paths:
         - in: path
           required: true
           name: concept
-          default: biological_process
+          example: biological_process
         - in: query
           name: version
-          default: ~default version~
+          example: ~default version~
       responses:
         '200':
           description: successful operation
