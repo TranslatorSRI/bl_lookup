@@ -54,15 +54,6 @@ def test_lookup_ancestors_nodes():
                                       "biolink:Entity",
                                       "biolink:OntologyClass",
                                       "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.3.9': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing"},
-                            '1.4.0': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity"},
                             '1.5.0': {"biolink:Occurrent",
                                       "biolink:BiologicalProcessOrActivity",
                                       "biolink:BiologicalEntity",
@@ -342,16 +333,6 @@ def test_lookup_with_commas():
 
     # On 3/8/2021 the latest version (1.6.0) no longer supports commas in the querystring. so it has been omitted here.
     versions_and_results = {
-        '1.3.9': {'biolink:affects',
-                 'biolink:negatively_regulates',
-                 'biolink:regulates',
-                 'biolink:regulates_entity_to_entity',
-                 'biolink:related_to'},
-        '1.4.0': {'biolink:affects',
-                 'biolink:negatively_regulates',
-                 'biolink:regulates',
-                 'biolink:regulates_entity_to_entity',
-                 'biolink:related_to'},
         '1.5.0': {'biolink:affects',
                  'biolink:negatively_regulates',
                  'biolink:regulates',
@@ -489,4 +470,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 28 and 'latest' in ret)
+    assert(len(ret) == 31 and 'latest' in ret)
