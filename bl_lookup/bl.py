@@ -9,7 +9,7 @@ from jsonasobj import as_dict
 default_version = os.environ.get('DEFAULT_VERSION', "2.2.3")
 
 # do not load these versions
-skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0']
+skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers']
 
 
 def get_latest_bl_model_release_url() -> str:
@@ -69,7 +69,8 @@ def get_models() -> (dict):
     # do we need to get the model versions
     if not models_loaded:
         # get all the biolink model versions
-        response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases')
+        # by default github releases returns 30
+        response: requests.Response = requests.get('https://api.github.com/repos/biolink/biolink-model/releases?per_page=100')
 
         # did we get the model versions
         if response.status_code == 200:
