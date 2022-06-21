@@ -53,7 +53,8 @@ def test_lookup_ancestors_nodes():
                                       "biolink:NamedThing",
                                       "biolink:Entity",
                                       "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
+                                      "biolink:PhysicalEssenceOrOccurrent",
+                                      "biolink:ThingWithTaxon"},
                             '1.5.0': {"biolink:Occurrent",
                                       "biolink:BiologicalProcessOrActivity",
                                       "biolink:BiologicalEntity",
@@ -470,4 +471,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 31 and 'latest' in ret)
+    assert(len(ret) == 39 and 'latest' in ret)
