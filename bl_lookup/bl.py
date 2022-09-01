@@ -9,7 +9,7 @@ from jsonasobj import as_dict
 default_version = os.environ.get('DEFAULT_VERSION', "2.2.3")
 
 # do not load these versions
-skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers']
+skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates']
 
 
 def get_latest_bl_model_release_url() -> str:

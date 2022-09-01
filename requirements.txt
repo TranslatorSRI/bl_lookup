@@ -1,11 +1,12 @@
 #linkml and black just here to set versions.  Once bmt is fixed, this can go away
-linkml==1.1.17
+linkml==1.3.2
+linkml-dataops==0.1.0
+linkml-runtime==1.3.2
 black<=21.12b0
 #Real stuff starts here
-bmt==0.8.1
+bmt==0.8.11
 jinja2==3.0.1
 pyyaml==5.1
-requests==2.26.0
 sanic==20.9.1
 swagger_ui_bundle==0.0.8
 pytest==6.2.4
