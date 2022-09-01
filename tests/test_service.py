@@ -145,7 +145,7 @@ def test_lookup_ancestors_mixin():
 def test_resolve_predicate():
     param = {'version': version}
     expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes', 'inverted': False},
-                'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes_by', 'label': 'caused by', 'inverted': True},
+                'SEMMEDDB:CAUSES': {'identifier': 'biolink:caused_by', 'label': 'caused by', 'inverted': True},
                 'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
 
     # make a good request
