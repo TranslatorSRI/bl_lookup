@@ -145,6 +145,7 @@ def test_lookup_ancestors_mixin():
 def test_resolve_predicate():
     param = {'version': version}
     expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes', 'inverted': False},
+                'SEMMEDDB:CAUSES': {'identifier': 'biolink:caused_by', 'label': 'caused by', 'inverted': True},
                 'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
 
     # make a good request
@@ -471,4 +472,4 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 39 and 'latest' in ret)
+    assert(len(ret) == 45 and 'latest' in ret)
