@@ -174,7 +174,7 @@ async def resolve(request):
             concept = key_case(unquote(predicate))
         else:
             # use what we got
-            concept = key_case(pred_mapping[0]['mapping'])
+            concept = key_case(pred_mapping[0]['mapping']['predicate'])
 
         try:
             # get the concept properties
@@ -207,9 +207,11 @@ async def resolve(request):
                         newconcept =  key_case(props['inverse'])
                         props = concepts['raw'][newconcept]
                         inverted = True
+            label = props['name']
+            pred= props['slot_uri']
         except KeyError:
             result[predicate] = {
-                'identifier': 'biolink:related_to',
+                'predicate': 'biolink:related_to',
                 'label': 'related to',
                 'inverted': False
             }
@@ -219,11 +221,23 @@ async def resolve(request):
         if props:
             # add the dat to the result
             result[predicate] = {
-                'identifier': props['slot_uri'],
-                'label': props['name'],
+                'predicate': pred,
+                'label': label,
                 'inverted': inverted
             }
 
+        # We might need to transform these into qualified predicates
+        if major_version == 'v3':
+            pmap = app.userdata['qualifier_map']
+            if pred in pmap:
+                result[predicate].update(pmap[pred])
+                if inverted:
+                    rpred = result[predicate]
+                    toreplace = [x for x in rpred.keys() if x.startswith('object')]
+                    for k in toreplace:
+                        newk = k.replace('object','subject')
+                        rpred[newk] = rpred[k]
+                        del rpred[k]
     # if nothing was found
     if len(result) == 0:
         ret_status = 404

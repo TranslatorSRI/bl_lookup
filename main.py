@@ -3,6 +3,7 @@
 import argparse
 from bl_lookup.server import app
 from bl_lookup.bl import models, generate_bl_map
+import json
 
 parser = argparse.ArgumentParser(description='Start BL lookup server.')
 parser.add_argument('--host', default='0.0.0.0', type=str)
@@ -19,9 +20,13 @@ for version in models:
 if args.model is not None:
     data['custom'], uri_maps['custom'] = generate_bl_map(url=args.model)
 
+with open('resources/predicate_map.json','r') as inmap:
+    pmap = json.load(inmap)
+
 app.userdata = {
     'data': data,
     'uri_maps': uri_maps,
+    'qualifier_map': pmap
 }
 
 app.run(

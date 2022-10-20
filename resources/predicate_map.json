@@ -1,0 +1,263 @@
+{
+  "biolink:negatively_regulates": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "decreased",
+    "label": "regulates"
+  },
+  "biolink:positively_regulates": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "increased",
+    "label": "regulates"
+  },
+  "biolink:decreases_abundance_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "abundance",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:decreases_synthesis_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "synthesis",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:decreases_expression_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "expression",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_degradation_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "degradation",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:increases_abundance_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "abundance",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:increases_synthesis_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "synthesis",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:increases_expression_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "expression",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_degradation_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "degradation",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:decreases_activity_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_activity_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_folding_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "folding",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_folding_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "folding",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_localization_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "localization",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_localization_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "localization",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_metabolic_processing_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "localization",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_metabolic_processing_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "localization",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_molecular_modification_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "molecular modification",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_molecular_modification_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "molecular modification",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_mutation_rate_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "mutation rate",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_mutation_rate_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "mutation rate",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_splicing_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "splicing",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_splicing_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "splicing",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_stability_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "stability",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_stability_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "stability",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_transport_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "transport",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_transport_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "transport",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_uptake_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "uptake",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_uptake_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "uptake",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:decreases_secretion_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "secretion",
+    "object_direction": "decreased",
+    "label": "affects"
+  },
+  "biolink:increases_secretion_of": {
+    "predicate": "biolink:affects",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "secretion",
+    "object_direction": "increased",
+    "label": "affects"
+  },
+  "biolink:entity_negatively_regulates_entity": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "decreased",
+    "label": "regulates"
+  },
+  "biolink:entity_positively_regulates_entity": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "increased",
+    "label": "regulates"
+  },
+  "biolink:process_negatively_regulates_process": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "decreased",
+    "label": "regulates"
+  },
+  "biolink:process_positively_regulates_process": {
+    "predicate": "biolink:regulates",
+    "qualified_predicate": "biolink:causes",
+    "object_aspect": "activity or abundance",
+    "object_direction": "increased",
+    "label": "regulates"
+  },
+  "biolink:directly_interacts_with": {
+    "predicate": "biolink:directly_physically_interacts_with"
+  },
+  "biolink:chemically_interacts_with": {
+    "predicate": "biolink:directly_physically_interacts_with"
+  },
+  "biolink:molecularly_interacts_with": {
+    "predicate": "biolink:directly_physically_interacts_with"
+  }
+}
