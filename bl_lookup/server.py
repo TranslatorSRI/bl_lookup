@@ -5,6 +5,7 @@ from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import key_case, default_version
 from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
+from sanic.log import logger
 
 app = Sanic(name='Biolink Model Lookup')
 app.config.ACCESS_LOG = False
@@ -205,8 +206,13 @@ async def resolve(request):
                     else:
                         #this is not the canonical direction, and it's not symmetric, we need to flip it (flip it good).
                         newconcept =  key_case(props['inverse'])
-                        props = concepts['raw'][newconcept]
-                        inverted = True
+                        iprops = concepts['raw'][newconcept]
+                        if 'biolink:canonical_predicate' in iprops and iprops['biolink:canonical_predicate'].upper() == 'TRUE':
+                            inverted = True
+                            props = iprops
+                        else:
+                            #neither is claimed as being canonical; just leave it alone
+                            inverted = False
             label = props['name']
             pred= props['slot_uri']
         except KeyError:
@@ -250,4 +256,5 @@ async def resolve(request):
 @app.route('/versions')
 async def versions(request):
     """Get available BL versions."""
+    logger.info('versions')
     return response.json(list(app.userdata['data'].keys()))

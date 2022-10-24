@@ -16,10 +16,13 @@ args = parser.parse_args()
 data = dict()
 uri_maps = dict()
 
-for version in models:
-    data[version], uri_maps[version] = generate_bl_map(version=version)
 if args.model is not None:
-    data['custom'], uri_maps['custom'] = generate_bl_map(url=args.model)
+    data[args.model], uri_maps[args.model] = generate_bl_map(version=args.model)
+else:
+    for version in models:
+        data[version], uri_maps[version] = generate_bl_map(version=version)
+#if args.model is not None:
+#    data['custom'], uri_maps['custom'] = generate_bl_map(url=args.model)
 
 pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('resources/predicate_map.json')
 with open(pmapfile,'r') as inmap:

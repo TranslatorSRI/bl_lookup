@@ -146,6 +146,25 @@ def test_resolve_qualified_predicate():
         # check the data
         assert (ret == expected)
 
+def test_resolve_qualified_expression():
+    """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
+    One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
+    input = 'RO:0003003'
+    expected_result = { 'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
+                                                    "object_aspect": "expression", "object_direction": "increased", 'inverted': False}}}
+    for v,expected in expected_result.items():
+        param = {'version': v}
+        request, response = app.test_client.get(f'/resolve_predicate?predicate={input}', params=param)
+
+        # was the request successful
+        assert (response.status_code == 200)
+
+        # convert the response to a json object
+        ret = json.loads(response.body)
+
+        # check the data
+        assert (ret == expected)
+
 def test_resolve_qualified_regulates():
     """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
     One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
