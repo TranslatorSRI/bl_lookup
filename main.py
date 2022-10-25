@@ -2,7 +2,7 @@
 """Run BL server."""
 import argparse
 from bl_lookup.server import app
-from bl_lookup.bl import models, generate_bl_map
+from bl_lookup.bl import get_models, generate_bl_map
 import json
 import pathlib
 
@@ -21,6 +21,7 @@ async def load_userdata(app, loop):
     if args.model is not None:
         data[args.model], uri_maps[args.model] = generate_bl_map(version=args.model)
     else:
+        models = get_models()
         for version in models:
             data[version], uri_maps[version] = generate_bl_map(version=version)
 

@@ -95,6 +95,7 @@ def get_models() -> (dict):
 
             # tack on the latest version
             models.update({'latest': get_latest_bl_model_release_url()})
+    return models
 
 
 def _key_case(arg: str):
