@@ -16,26 +16,31 @@ args = parser.parse_args()
 data = dict()
 uri_maps = dict()
 
-if args.model is not None:
-    data[args.model], uri_maps[args.model] = generate_bl_map(version=args.model)
-else:
-    for version in models:
-        data[version], uri_maps[version] = generate_bl_map(version=version)
-#if args.model is not None:
-#    data['custom'], uri_maps['custom'] = generate_bl_map(url=args.model)
+@app.listener("before_server_start")
+async def load_userdata(app, loop):
+    if args.model is not None:
+        data[args.model], uri_maps[args.model] = generate_bl_map(version=args.model)
+    else:
+        for version in models:
+            data[version], uri_maps[version] = generate_bl_map(version=version)
 
-pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('resources/predicate_map.json')
-with open(pmapfile,'r') as inmap:
-    pmap = json.load(inmap)
+    pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('resources/predicate_map.json')
+    with open(pmapfile,'r') as inmap:
+        pmap = json.load(inmap)
 
-app.userdata = {
-    'data': data,
-    'uri_maps': uri_maps,
-    'qualifier_map': pmap
-}
+    app.ctx.userdata = {
+        'data': data,
+        'uri_maps': uri_maps,
+        'qualifier_map': pmap
+    }
 
-app.run(
-    host=args.host,
-    port=args.port,
-    debug=False,
-)
+    #await configure_blueprint(blueprint)
+    #app.blueprint(blueprint)
+
+
+if __name__ == '__main__':
+    app.run(
+        host=args.host,
+        port=args.port,
+        debug=True,
+    )

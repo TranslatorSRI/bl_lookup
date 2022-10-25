@@ -1,16 +1,19 @@
 """Sanic BL server."""
 from sanic import Sanic, response
 
-from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import key_case, default_version
 from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
+from bl_lookup.apidocs import swagger_yml
 from sanic.log import logger
+from sanic_ext import Extend
 
-app = Sanic(name='Biolink Model Lookup')
+
+app = Sanic(name='BiolinkModelLookup')
 app.config.ACCESS_LOG = False
-app.blueprint(apidocs_blueprint)
-
+app.config.OAS_URL_PREFIX = "/apidocs"
+app.config.OAS_UI_DEFAULT= "swagger"
+Extend(app)
 
 @app.route('/bl/<concept>/<key>')
 async def lookup(request, concept, key):
@@ -20,7 +23,7 @@ async def lookup(request, concept, key):
     """
     version = request.args.get('version', default_version)
     try:
-        _data = app.userdata['data'][version]
+        _data = app.ctx.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -43,7 +46,7 @@ async def properties(request, concept):
     """Get raw properties for concept."""
     version = request.args.get('version', default_version)
     try:
-        _data = app.userdata['data'][version]
+        _data = app.ctx.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -61,7 +64,7 @@ async def uri_lookup(request, uri):
     """Look up slot by uri."""
     version = request.args.get('version', default_version)
     try:
-        uri_map = app.userdata['uri_maps'][version]
+        uri_map = app.ctx.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -89,7 +92,7 @@ async def resolve(request):
 
     try:
         # get the biolink uri map for the version
-        uri_map = app.userdata['uri_maps'][version]
+        uri_map = app.ctx.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -98,7 +101,7 @@ async def resolve(request):
 
     try:
         # get the concepts
-        concepts = app.userdata['data'][version]
+        concepts = app.ctx.userdata['data'][version]
 
         # was there a result
         if len(concepts) == 0:
@@ -234,7 +237,7 @@ async def resolve(request):
 
         # We might need to transform these into qualified predicates
         if major_version == 'v3':
-            pmap = app.userdata['qualifier_map']
+            pmap = app.ctx.userdata['qualifier_map']
             if pred in pmap:
                 result[predicate].update(pmap[pred])
                 if inverted:
@@ -257,4 +260,4 @@ async def resolve(request):
 async def versions(request):
     """Get available BL versions."""
     logger.info('versions')
-    return response.json(list(app.userdata['data'].keys()))
+    return response.json(list(app.ctx.userdata['data'].keys()))

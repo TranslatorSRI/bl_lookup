@@ -15,13 +15,13 @@ for version in test_models:
 with open(pmapfile,'r') as inmap:
     pmap = json.load(inmap)
 
-app.userdata = {
+app.ctx.userdata = {
     'data': data,
     'uri_maps': uri_maps,
     'qualifier_map': pmap
 }
 
-app.testing = True
+app.ctx.testing = True
 
 
 def call_successful_test(url, result_set, param, use_set=True):
