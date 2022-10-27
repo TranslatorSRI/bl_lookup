@@ -6,7 +6,7 @@ from bmt import Toolkit
 from jsonasobj import as_dict
 
 # set the default version for the UI and web service calls
-default_version = os.environ.get('DEFAULT_VERSION', "2.2.3")
+default_version = os.environ.get('DEFAULT_VERSION', "v3.0.3")
 
 # do not load these versions
 skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates']
@@ -95,6 +95,7 @@ def get_models() -> (dict):
 
             # tack on the latest version
             models.update({'latest': get_latest_bl_model_release_url()})
+    return models
 
 
 def _key_case(arg: str):
@@ -151,9 +152,22 @@ class bmt_wrapper():
         # 'annotations': annotations={'biolink:canonical_predicate':
         # Annotation(tag='biolink:canonical_predicate', value='True', extensions={}, annotations={})}
         # And we want to turn that into "Tag":"Value"
+        # in biolink 3:
+        #     annotations:
+        #       canonical_predicate: true
+        #       opposite_of: prevents
+        # in biolink 2:
+        # annotations:
+        #  biolink:canonical_predicate:
+        #         tag: biolink:canonical_predicate
+        #         value: true
         if 'annotations' in element:
             for k,v in element['annotations'].items():
-                element[v['tag']] = v['value']
+                #biolink: removed in biolink3
+                tag = v['tag']
+                if not tag.startswith('biolink:'):
+                    tag = 'biolink:' + tag
+                element[tag] = v['value']
             del element['annotations']
         return element
 
@@ -209,6 +223,7 @@ def generate_bl_map(url=None, version='latest'):
         for key in elements
     }
 
+    #The URL map in biolink 3 is a little fishy.   Right now, there are
     inverse_uri_map = {
         bmt.name_to_uri(key): bmt.get_element(key)
         for key in elements
@@ -217,18 +232,18 @@ def generate_bl_map(url=None, version='latest'):
     for key, value in inverse_uri_map.items():
         # For Versions < 1.4, the term is mappings
         for uri in value.get('mappings', []):
-            uri_map[uri].append({'mapping_type': 'exact', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'exact', 'mapping': {"predicate":key}})
         # For versions >= 1.4.0, the term is exact_mappings, but there are other kinds
         for uri in value.get('exact_mappings', []):
-            uri_map[uri].append({'mapping_type': 'exact', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'exact', 'mapping': {"predicate":key}})
         for uri in value.get('narrow_mappings', []):
-            uri_map[uri].append({'mapping_type': 'narrow', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'narrow', 'mapping': {"predicate":key}})
         for uri in value.get('broad_mappings', []):
-            uri_map[uri].append({'mapping_type': 'broad', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'broad', 'mapping': {"predicate": key}})
         for uri in value.get('related_mappings', []):
-            uri_map[uri].append({'mapping_type': 'related', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'related', 'mapping': {"predicate": key}})
         for uri in value.get('close_mappings', []):
-            uri_map[uri].append({'mapping_type': 'close', 'mapping': key})
+            uri_map[uri].append({'mapping_type': 'close', 'mapping': {"predicate": key}})
     data = {
         'geneology': geneology,
         'raw': raw,

@@ -1,20 +1,27 @@
 import json
 from bl_lookup.server import app
 from bl_lookup.bl import models, generate_bl_map
+import pathlib
 
 # init the data that this service responds with
 data = dict()
 uri_maps = dict()
 
-for version in models:
-    data[version], uri_maps[version] = generate_bl_map(version=version)
+test_models=['1.5.0','2.0.2','2.1.0','v2.4.7','v3.0.3','latest']
 
-app.userdata = {
+pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('../resources/predicate_map.json')
+for version in test_models:
+    data[version], uri_maps[version] = generate_bl_map(version=version)
+with open(pmapfile,'r') as inmap:
+    pmap = json.load(inmap)
+
+app.ctx.userdata = {
     'data': data,
     'uri_maps': uri_maps,
+    'qualifier_map': pmap
 }
 
-app.testing = True
+app.ctx.testing = True
 
 
 def call_successful_test(url, result_set, param, use_set=True):
@@ -61,41 +68,6 @@ def test_lookup_ancestors_nodes():
                                       "biolink:NamedThing",
                                       "biolink:Entity",
                                       "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.6.0': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.7.0': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.8.0': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.8.1': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-                            '1.8.2': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
                             '2.0.2': {"biolink:Occurrent",
                                       "biolink:BiologicalProcessOrActivity",
                                       "biolink:BiologicalEntity",
@@ -103,20 +75,14 @@ def test_lookup_ancestors_nodes():
                                       "biolink:Entity",
                                       "biolink:OntologyClass",
                                       "biolink:PhysicalEssenceOrOccurrent"},
-                            '2.1.0': {"biolink:Occurrent",
+                            'v2.4.7': {"biolink:Occurrent",
                                       "biolink:BiologicalProcessOrActivity",
                                       "biolink:BiologicalEntity",
                                       "biolink:NamedThing",
                                       "biolink:Entity",
                                       "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"},
-                            '2.2.3': {"biolink:Occurrent",
-                                      "biolink:BiologicalProcessOrActivity",
-                                      "biolink:BiologicalEntity",
-                                      "biolink:NamedThing",
-                                      "biolink:Entity",
-                                      "biolink:OntologyClass",
-                                      "biolink:PhysicalEssenceOrOccurrent"}
+                                      "biolink:PhysicalEssenceOrOccurrent",
+                                      "biolink:ThingWithTaxon"}
     }
 
     for vers, expected in versions_and_results.items():
@@ -143,30 +109,114 @@ def test_lookup_ancestors_mixin():
     call_successful_test('/bl/genomic_entity/ancestors', expected, param)
 
 def test_resolve_predicate():
-    param = {'version': version}
-    expected = {'SEMMEDDB:CAUSES': {'identifier': 'biolink:causes', 'label': 'causes', 'inverted': False},
-                'SEMMEDDB:CAUSES': {'identifier': 'biolink:caused_by', 'label': 'caused by', 'inverted': True},
-                'RO:0000052': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
+    for v in ['v2.4.7','v3.0.3']:
+        param = {'version': v}
+        expected = {'SEMMEDDB:CAUSES': {'predicate': 'biolink:causes', 'label': 'causes', 'inverted': False},
+                    'RO:0000052': {'predicate': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
 
-    # make a good request
-    request, response = app.test_client.get('/resolve_predicate?predicate=SEMMEDDB:CAUSES&predicate=RO:0000052', params=param)
+        # make a good request
+        request, response = app.test_client.get('/resolve_predicate?predicate=SEMMEDDB:CAUSES&predicate=RO:0000052', params=param)
 
-    # was the request successful
-    assert (response.status_code == 200)
+        # was the request successful
+        assert (response.status_code == 200)
 
-    # convert the response to a json object
-    ret = json.loads(response.body)
+        # convert the response to a json object
+        ret = json.loads(response.body)
 
-    # check the data
-    assert (ret == expected)
+        # check the data
+        assert (ret == expected)
 
-    #No no, this should return related_to, see "test_resolve_crap_predicate"
-    #call_unsuccessful_test('/resolve_predicate?predicate=couldbeanything', param)
+def test_resolve_qualified_predicate():
+    """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
+    One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
+    input = 'DGIdb:inhibitor'
+    expected_result = {'v2.4.7': {input: {'predicate': 'biolink:decreases_activity_of', 'label': 'decreases activity of', 'inverted': False}},
+                       'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
+                                                    "object_aspect": "activity", "object_direction": "decreased", 'inverted': False}}}
+    for v,expected in expected_result.items():
+        param = {'version': v}
+        request, response = app.test_client.get(f'/resolve_predicate?predicate={input}', params=param)
+
+        # was the request successful
+        assert (response.status_code == 200)
+
+        # convert the response to a json object
+        ret = json.loads(response.body)
+
+        # check the data
+        assert (ret == expected)
+
+def test_resolve_qualified_expression():
+    """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
+    One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
+    input = 'RO:0003003'
+    expected_result = { 'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
+                                                    "object_aspect": "expression", "object_direction": "increased", 'inverted': False}}}
+    for v,expected in expected_result.items():
+        param = {'version': v}
+        request, response = app.test_client.get(f'/resolve_predicate?predicate={input}', params=param)
+
+        # was the request successful
+        assert (response.status_code == 200)
+
+        # convert the response to a json object
+        ret = json.loads(response.body)
+
+        # check the data
+        assert (ret == expected)
+
+def test_resolve_qualified_regulates():
+    """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
+    One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
+    input = 'RO:0002449'
+    expected_result = {'v2.4.7': {input: {'predicate': 'biolink:entity_negatively_regulates_entity', 'label': 'entity negatively regulates entity', 'inverted': False}},
+                       'v3.0.3': {input: {'predicate': 'biolink:regulates', 'label': 'regulates', 'qualified_predicate': 'biolink:causes',
+                                                    "object_aspect": "activity or abundance", "object_direction": "decreased", 'inverted': False}}}
+    for v,expected in expected_result.items():
+        param = {'version': v}
+        request, response = app.test_client.get(f'/resolve_predicate?predicate={input}', params=param)
+
+        # was the request successful
+        assert (response.status_code == 200)
+
+        # convert the response to a json object
+        ret = json.loads(response.body)
+
+        # check the data
+        assert (ret == expected)
+
+
+def test_resolve_qualified_predicate_inverse():
+    """
+    Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
+    This includes both the canonical and inverted directions.  When we get a non-canonical predicate, we invert it (and
+    mark it as inverted).   None of the inverted deprecated predicates have any mappings, so we don't e.g. have an RO
+    term that we can test with here.  I guess we can use the currently deprecated inverse to test?
+    """
+    input="biolink:activity_decreased_by"
+    expected_result = {'v2.4.7': {input: {'predicate': 'biolink:decreases_activity_of',
+                                                                    'label': 'decreases activity of', 'inverted': True}},
+                       'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects',
+                                                                    'qualified_predicate': 'biolink:causes',
+                                                                    "subject_aspect": "activity", "subject_direction": "decreased",
+                                                                    'inverted': True}}}
+    for v,expected in expected_result.items():
+        param = {'version': v}
+        request, response = app.test_client.get(f'/resolve_predicate?predicate={input}', params=param)
+
+        # was the request successful
+        assert (response.status_code == 200)
+
+        # convert the response to a json object
+        ret = json.loads(response.body)
+
+        # check the data
+        assert (ret == expected)
 
 def test_resolve_crap_predicate():
     """No matter what you send in, it's a related to"""
-    param = {'version': '2.2.3'}
-    expected = {'GARBAGE:NOTHING': {'identifier': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
+    param = {'version': 'v2.4.7'}
+    expected = {'GARBAGE:NOTHING': {'predicate': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
 
     # make a good request
     request, response = app.test_client.get('/resolve_predicate?predicate=GARBAGE:NOTHING', params=param)
@@ -181,15 +231,15 @@ def test_resolve_crap_predicate():
     assert (ret == expected)
 
 def test_RO_exact():
-    expected = {"RO:0002506": {"identifier": "biolink:causes","label": "causes", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"RO:0002506": {"predicate": "biolink:causes","label": "causes", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002506', expected, param, use_set=False)
 
 def test_inversion():
     #WIKIDATA_PROPERTY:P828 is the exact map for caused by
-    expected = {"WIKIDATA_PROPERTY:P828": {"identifier": "biolink:causes","label": "causes", "inverted": True}}
+    expected = {"WIKIDATA_PROPERTY:P828": {"predicate": "biolink:causes","label": "causes", "inverted": True}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -198,15 +248,15 @@ def test_inversion():
 def test_inversion_old_biolink():
     #WIKIDATA_PROPERTY:P828 is the exact map for caused by
     #before biolink 2 there was no inversion
-    expected = {"WIKIDATA_PROPERTY:P828": {"identifier": "biolink:caused_by","label": "caused by", "inverted": False}}
-    param = {'version': '1.8.2'}
+    expected = {"WIKIDATA_PROPERTY:P828": {"predicate": "biolink:caused_by","label": "caused by", "inverted": False}}
+    param = {'version': '1.5.0'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P828', expected, param, use_set=False)
 
 def test_inversion_narrow_matches():
     #RO:0001022 is the narrow map for caused by
-    expected = {"RO:0001022": {"identifier": "biolink:causes","label": "causes", "inverted": True}}
+    expected = {"RO:0001022": {"predicate": "biolink:causes","label": "causes", "inverted": True}}
     param = {'version': 'latest'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
@@ -214,25 +264,24 @@ def test_inversion_narrow_matches():
 
 def test_inversion_symmetric():
     #RO:0002610 is correlated with.  It's symmetric so you can't invert it
-    expected = {"RO:0002610": {"identifier": "biolink:correlated_with","label": "correlated with", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"RO:0002610": {"predicate": "biolink:correlated_with","label": "correlated with", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002610', expected, param, use_set=False)
 
-
 def test_exact_slot_URI_non_RO():
     '''If we have a curie that is not a RO, but is a slot uri, return it as an edge identifier'''
-    expected = {"WIKIDATA_PROPERTY:P2293": {"identifier": "biolink:genetic_association", "label": "genetic association", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"WIKIDATA_PROPERTY:P2293": {"predicate": "biolink:genetic_association", "label": "genetic association", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=WIKIDATA_PROPERTY:P2293', expected, param, use_set=False)
 
 def test_exact_mapping():
     '''If we have a curie that is a direct mapping, but not a slot uri, return the corresponding slot uri as an edge identifier'''
-    expected = {"SEMMEDDB:PREVENTS": {"identifier": "biolink:prevents", "label": "prevents", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"SEMMEDDB:PREVENTS": {"predicate": "biolink:prevents", "label": "prevents", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=SEMMEDDB:PREVENTS', expected, param, use_set=False)
@@ -240,8 +289,8 @@ def test_exact_mapping():
 def test_RO_sub():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
-    expected = {"RO:0003303": {"identifier": "biolink:causes", "label": "causes", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"RO:0003303": {"predicate": "biolink:causes", "label": "causes", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0003303', expected, param, use_set=False)
@@ -250,25 +299,25 @@ def test_RO_sub_2():
     '''If we have a curie that is an RO, but is not a slot uri or a mapping, move to superclasses of the RO until we
     find one that we can map to BL. '''
     #2049 is indirectly inhibits 2212 is its parent
-    expected = {"RO:0002409": {"identifier": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"RO:0002409": {"predicate": "biolink:process_negatively_regulates_process", "label": "process negatively regulates process", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002409', expected, param, use_set=False)
 
 def test_no_inverse():
     """CTD:affects_activity_of has an exact map and no inverse.  It shouldn't crash."""
-    expected = {"CTD:affects_activity_of": {"identifier": "biolink:affects_activity_of",
+    expected = {"CTD:affects_activity_of": {"predicate": "biolink:affects_activity_of",
                                "label": "affects activity of", "inverted": False}}
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
     call_successful_test('/resolve_predicate?predicate=CTD:affects_activity_of', expected, param, use_set=False)
 
 
 def test_RO_bad():
     '''RO isn't single rooted.  So it's easy to get to the follow our plan and not get anywhere.  In that case,
     we want to hit related_to by fiat.'''
-    expected = {"RO:0002214": {"identifier": "biolink:related_to", "label": "related to", "inverted": False}}
-    param = {'version': '2.2.3'}
+    expected = {"RO:0002214": {"predicate": "biolink:related_to", "label": "related to", "inverted": False}}
+    param = {'version': 'v2.4.7'}
 
     '''If we have an RO that is an exact match, return an edge with that identfier'''
     call_successful_test('/resolve_predicate?predicate=RO:0002214', expected, param, use_set=False)
@@ -277,9 +326,9 @@ def test_lookup_ancestors_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underscores, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
     # All these tests should return the same set of entities
-    expected = {'biolink:affects', 'biolink:related_to'}
+    expected = {'biolink:affects', 'biolink:related_to', 'biolink:related_to_at_instance_level'}
     # With space
     call_successful_test('/bl/affects expression of/ancestors', expected, param)
     # With underscores
@@ -292,7 +341,7 @@ def test_lookup_ancestors_edges():
 
 def test_lookup_descendents_class():
     # setup some parameters
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
     # All these tests should return the same set of entities
     expected = {'biolink:BehavioralFeature',
                  'biolink:ClinicalFinding',
@@ -316,7 +365,7 @@ def test_lookup_descendants_edges():
     """Looking up ancestors should be permissive, you should be able to look up by name with either space or
     underscores, and you should be able to look up by class uri. Also, we would like the lookup to be case insensitive"""
     # setup some parameters
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
     # All these tests should return the same set of entities
     expected = {'biolink:affects_expression_of', 'biolink:increases_expression_of', 'biolink:decreases_expression_of'}
     # With space
@@ -354,7 +403,7 @@ def test_lookup_with_commas():
 
 def test_lookup_related_to():
     # setup some parameters
-    param = {'version': '2.2.5'}
+    param = {'version': 'v2.4.7'}
 
     # make a good request
     #request, response = app.test_client.get('/bl/related_to', params=param)
@@ -365,7 +414,7 @@ def test_lookup_related_to():
 
 def test_lookup_lineage():
     # setup some parameters
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
 
     # make a good request
     request, response = app.test_client.get('/bl/biological_process/lineage', params=param)
@@ -376,7 +425,7 @@ def test_lookup_lineage():
     # convert the response to a json object
     ret = json.loads(response.body)
 
-    # check the data.  This set works for version 1.4.0
+    # check the data.  This set works for version 2.4.7
     # Keeping these up to date is a nuisance.  What's the right thing to do?
     expected = {'biolink:Behavior',
      'biolink:BiologicalEntity',
@@ -389,7 +438,8 @@ def test_lookup_lineage():
      'biolink:PathologicalProcess',
      'biolink:Pathway',
      'biolink:PhysicalEssenceOrOccurrent',
-     'biolink:PhysiologicalProcess'}
+     'biolink:PhysiologicalProcess',
+     'biolink:ThingWithTaxon'}
 
     assert set(ret) == expected
 
@@ -401,9 +451,7 @@ def test_lookup_lineage():
 
 
 def call_uri_lookup(uri, expected_mapping):
-    # setup some parameters
-    # works for latest = 1.4.0
-    param = {'version': '2.2.3'}
+    param = {'version': 'v2.4.7'}
 
     # make a good request
     request, response = app.test_client.get(f'/uri_lookup/{uri}', params=param)
@@ -420,13 +468,14 @@ def call_uri_lookup(uri, expected_mapping):
 
 
 def test_uri_lookup():
-    call_uri_lookup('RO:0002206', {'mapping': 'biolink:expressed_in', 'mapping_type': 'exact'})
+    call_uri_lookup('RO:0002206', {'mapping': {'predicate':'biolink:expressed_in'}, 'mapping_type': 'exact'})
     # Between 1.6 and 1.8, this changed to NCIT:46
     # call_uri_lookup('NCIT:gene_product_expressed_in_tissue',{'mapping':'biolink:expressed_in', 'mapping_type':'narrow'})
-    call_uri_lookup('NCIT:R46', {'mapping': 'biolink:expressed_in', 'mapping_type': 'narrow'})
-    call_uri_lookup('hetio:PRESENTS_DpS', {'mapping': 'biolink:has_phenotype', 'mapping_type': 'broad'})
-    call_uri_lookup('GOREL:0001010', {'mapping': 'biolink:produces', 'mapping_type': 'related'})
-    call_uri_lookup('BFO:0000067', {'mapping': 'biolink:occurs_in', 'mapping_type': 'close'})
+    call_uri_lookup('NCIT:R46', {'mapping': {'predicate': 'biolink:expressed_in'}, 'mapping_type': 'narrow'})
+    #These have been removed as mappings
+    #call_uri_lookup('hetio:PRESENTS_DpS', {'mapping': {'predicate': 'biolink:has_phenotype'}, 'mapping_type': 'broad'})
+    call_uri_lookup('GOREL:0001010', {'mapping': {'predicate': 'biolink:produces'}, 'mapping_type': 'related'})
+    call_uri_lookup('BFO:0000067', {'mapping': {'predicate':'biolink:occurs_in'}, 'mapping_type': 'close'})
 
     # make a bad request
     request, response = app.test_client.get('/uri_lookup/RO%3ARO:0002602', params={'version': 'latest'})
@@ -472,4 +521,6 @@ def test_versions():
     ret = json.loads(response.body)
 
     # check the data
-    assert(len(ret) == 45 and 'latest' in ret)
+    assert('v2.4.7' in ret)
+    assert('v3.0.3' in ret)
+    assert(len(ret) == 6 and 'latest' in ret)

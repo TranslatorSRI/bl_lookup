@@ -1,0 +1,21 @@
+contact:
+  email: bizon@renci.org
+  name: Chris Bizon
+  x-id: https://github.com/cbizon
+  x-role: responsible developer
+description: 'The <a href="https://biolink.github.io/biolink-model/">Biolink Model</a> defines a set of common concepts for use in Translator. These include semantic types for entities, as well as the relations between them. These concepts are organized into an inheritance hierarchy capturing different granularities of description. Furthermore, each concept contains metadata relating the concept to ontologies. The Biolink Lookup Service provides a computational interface to the model, including access to previous versions. When the service is deployed, it queries the Biolink Github repository, and updates itself to access the latest supported (default) version.'
+title: Biolink Model Lookup
+servers:
+  - description: Default server
+    url: https://bl-lookup-sri.renci.org/apidocs/
+termsOfService: http://robokop.renci.org:7055/tos?service_long=Biolink+Model+Lookup&provider_long=the+Translator+Consortium
+version: '1.2'
+tags:
+  - name: translator
+  - name: lookup
+  - name: meta
+x-translator:
+  component: Utility
+  team:
+    - Standards Reference Implementation Team
+  infores: "infores:renci-bionames"

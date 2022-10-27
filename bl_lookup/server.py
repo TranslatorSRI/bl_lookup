@@ -1,15 +1,19 @@
 """Sanic BL server."""
 from sanic import Sanic, response
 
-from bl_lookup.apidocs import bp as apidocs_blueprint
 from bl_lookup.bl import key_case, default_version
 from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
+from bl_lookup.apidocs import swagger_yml
+from sanic.log import logger
+from sanic_ext import Extend
 
-app = Sanic(name='Biolink Model Lookup')
+
+app = Sanic(name='BiolinkModelLookup')
 app.config.ACCESS_LOG = False
-app.blueprint(apidocs_blueprint)
-
+app.config.OAS_URL_PREFIX = "/apidocs"
+app.config.OAS_UI_DEFAULT= "swagger"
+Extend(app)
 
 @app.route('/bl/<concept>/<key>')
 async def lookup(request, concept, key):
@@ -19,7 +23,7 @@ async def lookup(request, concept, key):
     """
     version = request.args.get('version', default_version)
     try:
-        _data = app.userdata['data'][version]
+        _data = app.ctx.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -42,7 +46,7 @@ async def properties(request, concept):
     """Get raw properties for concept."""
     version = request.args.get('version', default_version)
     try:
-        _data = app.userdata['data'][version]
+        _data = app.ctx.userdata['data'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -60,7 +64,7 @@ async def uri_lookup(request, uri):
     """Look up slot by uri."""
     version = request.args.get('version', default_version)
     try:
-        uri_map = app.userdata['uri_maps'][version]
+        uri_map = app.ctx.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -88,7 +92,7 @@ async def resolve(request):
 
     try:
         # get the biolink uri map for the version
-        uri_map = app.userdata['uri_maps'][version]
+        uri_map = app.ctx.userdata['uri_maps'][version]
     except KeyError:
         return response.text(f"No version '{version}' available\n", status=404)
 
@@ -97,7 +101,7 @@ async def resolve(request):
 
     try:
         # get the concepts
-        concepts = app.userdata['data'][version]
+        concepts = app.ctx.userdata['data'][version]
 
         # was there a result
         if len(concepts) == 0:
@@ -174,7 +178,7 @@ async def resolve(request):
             concept = key_case(unquote(predicate))
         else:
             # use what we got
-            concept = key_case(pred_mapping[0]['mapping'])
+            concept = key_case(pred_mapping[0]['mapping']['predicate'])
 
         try:
             # get the concept properties
@@ -205,11 +209,18 @@ async def resolve(request):
                     else:
                         #this is not the canonical direction, and it's not symmetric, we need to flip it (flip it good).
                         newconcept =  key_case(props['inverse'])
-                        props = concepts['raw'][newconcept]
-                        inverted = True
+                        iprops = concepts['raw'][newconcept]
+                        if 'biolink:canonical_predicate' in iprops and iprops['biolink:canonical_predicate'].upper() == 'TRUE':
+                            inverted = True
+                            props = iprops
+                        else:
+                            #neither is claimed as being canonical; just leave it alone
+                            inverted = False
+            label = props['name']
+            pred= props['slot_uri']
         except KeyError:
             result[predicate] = {
-                'identifier': 'biolink:related_to',
+                'predicate': 'biolink:related_to',
                 'label': 'related to',
                 'inverted': False
             }
@@ -219,11 +230,23 @@ async def resolve(request):
         if props:
             # add the dat to the result
             result[predicate] = {
-                'identifier': props['slot_uri'],
-                'label': props['name'],
+                'predicate': pred,
+                'label': label,
                 'inverted': inverted
             }
 
+        # We might need to transform these into qualified predicates
+        if major_version == 'v3':
+            pmap = app.ctx.userdata['qualifier_map']
+            if pred in pmap:
+                result[predicate].update(pmap[pred])
+                if inverted:
+                    rpred = result[predicate]
+                    toreplace = [x for x in rpred.keys() if x.startswith('object')]
+                    for k in toreplace:
+                        newk = k.replace('object','subject')
+                        rpred[newk] = rpred[k]
+                        del rpred[k]
     # if nothing was found
     if len(result) == 0:
         ret_status = 404
@@ -236,4 +259,5 @@ async def resolve(request):
 @app.route('/versions')
 async def versions(request):
     """Get available BL versions."""
-    return response.json(list(app.userdata['data'].keys()))
+    logger.info('versions')
+    return response.json(list(app.ctx.userdata['data'].keys()))
