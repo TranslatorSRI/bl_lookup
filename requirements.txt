@@ -12,5 +12,5 @@ pytest-cov==2.12.1
 pytest-asyncio
 httpx==0.23.0
 httpcore==0.15.0
-fastapi==0.63.0
+fastapi==0.65.2
 uvicorn==0.13.3
