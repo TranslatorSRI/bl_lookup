@@ -99,8 +99,6 @@ def construct_open_api_schema():
 
     return open_api_schema
 
-# note: this must be commented out for local debugging
-APP.openapi_schema = construct_open_api_schema()
 
 APP.add_middleware(
     CORSMiddleware,
@@ -145,7 +143,18 @@ def get_property(key,props,concept):
     except KeyError:
         raise Exception( f"No property '{key}' for concept '{concept}'\n")
 
-@APP.get('/bl/{concept}/{key}')
+@APP.get('/bl/{concept}/ancestors',tags=["lookup"])
+async def lookup_ancestors(concept, version = default_version):
+    return await lookup(concept,'ancestors',version)
+
+@APP.get('/bl/{concept}/descendants',tags=["lookup"])
+async def lookup_descendants(concept, version = default_version):
+    return await lookup(concept,'descendants',version)
+
+@APP.get('/bl/{concept}/lineage',tags=["lookup"])
+async def lookup_lineage(concept, version = default_version):
+    return await lookup(concept,'lineage',version)
+
 async def lookup(concept, key, version = default_version):
     """
     This is used to implement /ancestors etc
@@ -159,7 +168,7 @@ async def lookup(concept, key, version = default_version):
 
     return JSONResponse(content=value, status_code = 200)
 
-@APP.get('/bl/{concept}')
+@APP.get('/bl/{concept}',tags=["lookup"])
 async def properties(concept, version = default_version):
     """Get raw properties for concept."""
     try:
@@ -171,7 +180,7 @@ async def properties(concept, version = default_version):
     return JSONResponse(content=props, status_code=200)
 
 
-@APP.get('/uri_lookup/{uri}')
+@APP.get('/uri_lookup/{uri}',tags=["lookup"])
 async def uri_lookup(uri, version = default_version):
     """Look up slot by uri."""
 
@@ -184,7 +193,7 @@ async def uri_lookup(uri, version = default_version):
     return JSONResponse(content=keys, status_code=200)
 
 
-@APP.get('/resolve_predicate')
+@APP.get('/resolve_predicate',tags=["lookup"])
 async def resolve(predicate: Union[List[str], None] = Query(default=None), version = default_version):
     """
     :param request:
@@ -351,7 +360,10 @@ async def resolve(predicate: Union[List[str], None] = Query(default=None), versi
     return JSONResponse(content=result, status_code=ret_status)
 
 
-@APP.get('/versions')
+@APP.get('/versions',tags=["meta"])
 async def versions():
     """Get available BL versions."""
     return JSONResponse(content = list(biolink_data.keys()), status_code = 200)
+
+# note: this must be commented out for local debugging
+APP.openapi_schema = construct_open_api_schema()
