@@ -1,117 +1,212 @@
-"""Sanic BL server."""
-from sanic import Sanic, response
+from typing import List, Union
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
+import os
+import yaml
+import pathlib
+import json
 
-from bl_lookup.bl import key_case, default_version
+from bl_lookup.bl import key_case, default_version, get_models, generate_bl_map
 from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
-from bl_lookup.apidocs import swagger_yml
-from sanic.log import logger
-from sanic_ext import Extend
+from main import args
 
+APP_VERSION = '1.3'
+APP = FastAPI(title='Biolink Model Lookup', version=APP_VERSION)
 
-app = Sanic(name='BiolinkModelLookup')
-app.config.ACCESS_LOG = False
-app.config.OAS_URL_PREFIX = "/apidocs"
-app.config.OAS_UI_DEFAULT= "swagger"
-Extend(app)
+biolink_data = dict()
+biolink_uri_maps = dict()
+biolink_qualifier_map = dict()
 
-@app.route('/bl/<concept>/<key>')
-async def lookup(request, concept, key):
-    """Get value of property for concept.
+@APP.on_event("startup")
+async def load_userdata(models = None):
+    if (args is not None) and (not args == {}) and (args.model is not None):
+        biolink_data[args.model], biolink_uri_maps[args.model] = generate_bl_map(version=args.model)
+    else:
+        if models is None:
+            models = get_models()
+        for version in models:
+            biolink_data[version], biolink_uri_maps[version] = generate_bl_map(version=version)
 
-    e.g. descendants of gene_product
-    """
-    version = request.args.get('version', default_version)
+    pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('../resources/predicate_map.json')
+    with open(pmapfile,'r') as inmap:
+        biolink_qualifier_map.update(json.load(inmap))
+
+def construct_open_api_schema():
+
+    if APP.openapi_schema:
+        return APP.openapi_schema
+
+    open_api_schema = get_openapi(
+        title='Biolink Model Lookup',
+        version=APP_VERSION,
+        routes = APP.routes
+    )
+
+    open_api_extended_file_path = os.path.join(os.path.dirname(__file__), '../openapi-config.yml')
+
+    with open(open_api_extended_file_path) as open_api_file:
+        open_api_extended_spec = yaml.load(open_api_file, Loader=yaml.SafeLoader)
+
+    x_translator_extension = open_api_extended_spec.get("x-translator")
+    x_trapi_extension = open_api_extended_spec.get("x-trapi")
+    contact_config = open_api_extended_spec.get("contact")
+    terms_of_service = open_api_extended_spec.get("termsOfService")
+    servers_conf = open_api_extended_spec.get("servers")
+    tags = open_api_extended_spec.get("tags")
+    title_override = open_api_extended_spec.get("title") or 'Biolink Model Lookup'
+    description = open_api_extended_spec.get("description")
+
+    if tags:
+        open_api_schema['tags'] = tags
+
+    if x_translator_extension:
+        # if x_translator_team is defined amends schema with x_translator extension
+        open_api_schema["info"]["x-translator"] = x_translator_extension
+
+    if x_trapi_extension:
+        # if x_trapi_team is defined amends schema with x_trapi extension
+        open_api_schema["info"]["x-trapi"] = x_trapi_extension
+
+    if contact_config:
+        open_api_schema["info"]["contact"] = contact_config
+
+    if terms_of_service:
+        open_api_schema["info"]["termsOfService"] = terms_of_service
+
+    if description:
+        open_api_schema["info"]["description"] = description
+
+    if title_override:
+        open_api_schema["info"]["title"] = title_override
+
+    # adds support to override server root path
+    server_root = os.environ.get('SERVER_ROOT', '/')
+
+    # make sure not to add double slash at the end.
+    server_root = server_root.rstrip('/') + '/'
+
+    if servers_conf:
+        for s in servers_conf:
+            if s['description'].startswith('Default'):
+                s['url'] = server_root + '1.3' if server_root != '/' else s['url']
+                s['x-maturity'] = os.environ.get("MATURITY_VALUE", "maturity")
+                s['x-location'] = os.environ.get("LOCATION_VALUE", "location")
+
+        open_api_schema["servers"] = servers_conf
+
+    return open_api_schema
+
+# note: this must be commented out for local debugging
+APP.openapi_schema = construct_open_api_schema()
+
+APP.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+def get_uri_map(version):
     try:
-        _data = app.ctx.userdata['data'][version]
+        uri_map = biolink_uri_maps[version]
+        return uri_map
     except KeyError:
-        return response.text(f"No version '{version}' available\n", status=404)
+        raise Exception(f"No version '{version}' available\n")
 
-    concept = key_case(unquote(concept))
-    try:
-        props = _data['geneology'][concept]
-    except KeyError:
-        return response.text(f"No concept '{concept}'\n", status=404)
-
-    try:
-        value = list(dict.fromkeys(props[unquote(key)]))
-    except KeyError:
-        return response.text(f"No property '{key}' for concept '{concept}'\n", status=404)
-
-    return response.json(value)
-
-
-@app.route('/bl/<concept>')
-async def properties(request, concept):
-    """Get raw properties for concept."""
-    version = request.args.get('version', default_version)
-    try:
-        _data = app.ctx.userdata['data'][version]
-    except KeyError:
-        return response.text(f"No version '{version}' available\n", status=404)
-
-    concept = key_case(unquote(concept))
-    try:
-        props = _data['raw'][concept]
-    except KeyError:
-        return response.text(f"No concept '{concept}'\n", status=404)
-
-    return response.json(props)
-
-
-@app.route('/uri_lookup/<uri>')
-async def uri_lookup(request, uri):
-    """Look up slot by uri."""
-    version = request.args.get('version', default_version)
-    try:
-        uri_map = app.ctx.userdata['uri_maps'][version]
-    except KeyError:
-        return response.text(f"No version '{version}' available\n", status=404)
-
+def get_keys_for_uri(uri_map,uri):
     uri = unquote(uri)
     try:
         keys = uri_map[uri]
+        return keys
     except KeyError:
-        return response.text(f"No uri '{uri}'\n", status=404)
-
-    return response.json(keys)
+        raise Exception (f"No uri '{uri}'\n")
 
 
-@app.route('/resolve_predicate')
-async def resolve(request):
+def get_data(version):
+    try:
+        return biolink_data[version]
+    except KeyError:
+        raise Exception(f"No version '{version}' available\n")
+
+def get_concept(concept,_data, datatype='raw'):
+    concept = key_case(unquote(concept))
+    try:
+        return _data[datatype][concept]
+    except KeyError:
+        raise Exception(f"No '{concept}'\n")
+
+def get_property(key,props,concept):
+    try:
+        return list(dict.fromkeys(props[unquote(key)]))
+    except KeyError:
+        raise Exception( f"No property '{key}' for concept '{concept}'\n")
+
+@APP.get('/bl/{concept}/{key}')
+async def lookup(concept, key, version = default_version):
+    """
+    This is used to implement /ancestors etc
+    """
+    try:
+        _data = get_data(version)
+        props = get_concept(concept,_data,datatype='geneology')
+        value=get_property(key,props,concept)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=404)
+
+    return JSONResponse(content=value, status_code = 200)
+
+@APP.get('/bl/{concept}')
+async def properties(concept, version = default_version):
+    """Get raw properties for concept."""
+    try:
+        _data = get_data(version)
+        props = get_concept(concept,_data)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=404)
+
+    return JSONResponse(content=props, status_code=200)
+
+
+@APP.get('/uri_lookup/{uri}')
+async def uri_lookup(uri, version = default_version):
+    """Look up slot by uri."""
+
+    try:
+        uri_map = get_uri_map(version)
+        keys = get_keys_for_uri(uri_map,uri)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=404)
+
+    return JSONResponse(content=keys, status_code=200)
+
+
+@APP.get('/resolve_predicate')
+async def resolve(predicate: Union[List[str], None] = Query(default=None), version = default_version):
     """
     :param request:
 
     :return:
     """
+    # This is a little dumb
+    predicates = predicate
     # init the result
     result = {}
 
-    # grab the version, default if needed
-    version = request.args.get('version', default_version)
-
     try:
-        # get the biolink uri map for the version
-        uri_map = app.ctx.userdata['uri_maps'][version]
-    except KeyError:
-        return response.text(f"No version '{version}' available\n", status=404)
+        uri_map = get_uri_map(version)
+        concepts = get_data(version)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=404)
 
     # get the class that does ubergraph operations
     ug = UberGraph()
 
-    try:
-        # get the concepts
-        concepts = app.ctx.userdata['data'][version]
-
-        # was there a result
-        if len(concepts) == 0:
-            raise KeyError
-
-    except KeyError:
-        return response.text(f"No concepts for version '{version}' available\n", status=404)
-
     # for each value received
-    for predicate in request.args['predicate']:
+    for predicate in predicates:
         # prep and decode the uri
         predicate = unquote(predicate)
 
@@ -237,7 +332,7 @@ async def resolve(request):
 
         # We might need to transform these into qualified predicates
         if major_version == 'v3':
-            pmap = app.ctx.userdata['qualifier_map']
+            pmap = biolink_qualifier_map
             if pred in pmap:
                 result[predicate].update(pmap[pred])
                 if inverted:
@@ -253,11 +348,10 @@ async def resolve(request):
     else:
         ret_status = 200
 
-    return response.json(result, status=ret_status)
+    return JSONResponse(content=result, status_code=ret_status)
 
 
-@app.route('/versions')
-async def versions(request):
+@APP.get('/versions')
+async def versions():
     """Get available BL versions."""
-    logger.info('versions')
-    return response.json(list(app.ctx.userdata['data'].keys()))
+    return JSONResponse(content = list(biolink_data.keys()), status_code = 200)
