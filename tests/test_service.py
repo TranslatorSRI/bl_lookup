@@ -127,7 +127,7 @@ def test_resolve_qualified_predicate(test_client):
     input = 'DGIdb:inhibitor'
     expected_result = {'v2.4.7': {input: {'predicate': 'biolink:decreases_activity_of', 'label': 'decreases activity of', 'inverted': False}},
                        'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
-                                                    "object_aspect": "activity", "object_direction": "decreased", 'inverted': False}}}
+                                                    "object_aspect_qualifier": "activity", "object_direction_qualifier": "decreased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
         response = test_client.get(f'/resolve_predicate?predicate={input}', params=param)
@@ -146,7 +146,7 @@ def test_resolve_qualified_expression(test_client):
     One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
     input = 'RO:0003003'
     expected_result = { 'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
-                                                    "object_aspect": "expression", "object_direction": "increased", 'inverted': False}}}
+                                                    "object_aspect_qualifier": "expression", "object_direction_qualifier": "increased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
         response = test_client.get(f'/resolve_predicate?predicate={input}', params=param)
@@ -166,7 +166,7 @@ def test_resolve_qualified_regulates(test_client):
     input = 'RO:0002449'
     expected_result = {'v2.4.7': {input: {'predicate': 'biolink:entity_negatively_regulates_entity', 'label': 'entity negatively regulates entity', 'inverted': False}},
                        'v3.0.3': {input: {'predicate': 'biolink:regulates', 'label': 'regulates', 'qualified_predicate': 'biolink:causes',
-                                                    "object_aspect": "activity or abundance", "object_direction": "decreased", 'inverted': False}}}
+                                                    "object_aspect_qualifier": "activity or abundance", "object_direction_qualifier": "decreased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
         response = test_client.get(f'/resolve_predicate?predicate={input}', params=param)
@@ -193,7 +193,7 @@ def test_resolve_qualified_predicate_inverse(test_client):
                                                                     'label': 'decreases activity of', 'inverted': True}},
                        'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects',
                                                                     'qualified_predicate': 'biolink:causes',
-                                                                    "subject_aspect": "activity", "subject_direction": "decreased",
+                                                                    "subject_aspect_qualifier": "activity", "subject_direction_qualifier": "decreased",
                                                                     'inverted': True}}}
     for v,expected in expected_result.items():
         param = {'version': v}
@@ -470,6 +470,7 @@ def test_uri_lookup(test_client):
     #call_uri_lookup('hetio:PRESENTS_DpS', {'mapping': {'predicate': 'biolink:has_phenotype'}, 'mapping_type': 'broad'})
     call_uri_lookup('GOREL:0001010', {'mapping': {'predicate': 'biolink:produces'}, 'mapping_type': 'related'}, test_client)
     call_uri_lookup('BFO:0000067', {'mapping': {'predicate':'biolink:occurs_in'}, 'mapping_type': 'close'}, test_client)
+    call_uri_lookup('RO:0002606', {'mapping': {'predicate': 'biolink:treats'}, 'mapping_type':'narrow'}, test_client)
 
     # make a bad request
     response = test_client.get('/uri_lookup/RO%3ARO:0002602', params={'version': 'latest'})
