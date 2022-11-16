@@ -13,7 +13,7 @@ from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
 from main import args
 
-APP_VERSION = '1.3.1'
+APP_VERSION = '1.3.2'
 APP = FastAPI(title='Biolink Model Lookup', version=APP_VERSION)
 
 biolink_data = dict()
