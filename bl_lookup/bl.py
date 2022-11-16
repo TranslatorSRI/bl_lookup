@@ -6,7 +6,7 @@ from bmt import Toolkit
 from jsonasobj import as_dict
 
 # set the default version for the UI and web service calls
-default_version = os.environ.get('DEFAULT_VERSION', "v3.0.3")
+default_version = os.environ.get('DEFAULT_VERSION', "v3.1.0")
 
 # do not load these versions
 skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates']
