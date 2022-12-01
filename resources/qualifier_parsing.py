@@ -7,20 +7,16 @@ inverted = set()
 predicate_map = {}
 with open('predicate_transformations.tsv','r') as inf:
     header = inf.readline()
-    htok = header[:-1].split('\t')
+    htok = header.strip('\n').split('\t')
     for line in inf:
-        toks = line[:-1].split('\t')
+        toks = line.strip('\n').split('\t')
         while len(toks) < len(htok):
             toks.append('')
         pred = f'biolink:{toks[0]}'
         info = bt.get_element(pred)
         try:
             if (info.deprecated):
-                print(pred)
                 if toks[1] == '':
-                    print('tokens')
-                    for i,t in enumerate(toks):
-                        print(i,t)
                     if info['inverse'] is not None:
                         inverted.add(f"biolink:{'_'.join(info['inverse'].split())}")
                     else:
@@ -37,7 +33,9 @@ with open('predicate_transformations.tsv','r') as inf:
                     if 'predicate' in pmap:
                         pmap['label'] = pmap['predicate']
                         pmap['predicate'] = f"biolink:{pmap['predicate']}"
-                        pmap['qualified_predicate'] = f"biolink:{pmap['qualified_predicate']}"
+                        if 'qualified_predicate' in pmap:
+                            #for 'affects_stuff' predicates, there's not a qualified predicate of 'causes'
+                            pmap['qualified_predicate'] = f"biolink:{pmap['qualified_predicate']}"
                     predicate_map[pred] = pmap
         except Exception as e:
             print(toks)

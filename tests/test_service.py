@@ -14,7 +14,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope="module")
 async def test_client():
-    test_models=['1.5.0','2.0.2','2.1.0','v2.4.7','v3.0.3','latest']
+    test_models=['1.5.0','2.0.2','2.1.0','v2.4.7','v3.1.0','latest']
     await load_userdata(test_models)
     return TestClient(APP)
 
@@ -104,7 +104,7 @@ def test_lookup_ancestors_mixin(test_client):
     call_successful_test('/bl/genomic_entity/ancestors', expected, param, test_client)
 
 def test_resolve_predicate(test_client):
-    for v in ['v2.4.7','v3.0.3']:
+    for v in ['v2.4.7','v3.1.0']:
         param = {'version': v}
         expected = {'SEMMEDDB:CAUSES': {'predicate': 'biolink:causes', 'label': 'causes', 'inverted': False},
                     'RO:0000052': {'predicate': 'biolink:related_to', 'label': 'related to', 'inverted': False}}
@@ -126,7 +126,7 @@ def test_resolve_qualified_predicate(test_client):
     One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
     input = 'DGIdb:inhibitor'
     expected_result = {'v2.4.7': {input: {'predicate': 'biolink:decreases_activity_of', 'label': 'decreases activity of', 'inverted': False}},
-                       'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
+                       'v3.1.0': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
                                                     "object_aspect_qualifier": "activity", "object_direction_qualifier": "decreased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
@@ -145,7 +145,7 @@ def test_resolve_qualified_expression(test_client):
     """Moving from biolink 2 to 3 some predicates are being replaced with predicate+qualifier.
     One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
     input = 'RO:0003003'
-    expected_result = { 'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
+    expected_result = { 'v3.1.0': {input: {'predicate': 'biolink:affects', 'label': 'affects', 'qualified_predicate': 'biolink:causes',
                                                     "object_aspect_qualifier": "expression", "object_direction_qualifier": "increased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
@@ -165,7 +165,7 @@ def test_resolve_qualified_regulates(test_client):
     One such is decreases_activity_of.   It had (in v2) a mapping from DGIdb:agonist."""
     input = 'RO:0002449'
     expected_result = {'v2.4.7': {input: {'predicate': 'biolink:entity_negatively_regulates_entity', 'label': 'entity negatively regulates entity', 'inverted': False}},
-                       'v3.0.3': {input: {'predicate': 'biolink:regulates', 'label': 'regulates', 'qualified_predicate': 'biolink:causes',
+                       'v3.1.0': {input: {'predicate': 'biolink:regulates', 'label': 'regulates', 'qualified_predicate': 'biolink:causes',
                                                     "object_aspect_qualifier": "activity or abundance", "object_direction_qualifier": "decreased", 'inverted': False}}}
     for v,expected in expected_result.items():
         param = {'version': v}
@@ -191,7 +191,7 @@ def test_resolve_qualified_predicate_inverse(test_client):
     input="biolink:activity_decreased_by"
     expected_result = {'v2.4.7': {input: {'predicate': 'biolink:decreases_activity_of',
                                                                     'label': 'decreases activity of', 'inverted': True}},
-                       'v3.0.3': {input: {'predicate': 'biolink:affects', 'label': 'affects',
+                       'v3.1.0': {input: {'predicate': 'biolink:affects', 'label': 'affects',
                                                                     'qualified_predicate': 'biolink:causes',
                                                                     "subject_aspect_qualifier": "activity", "subject_direction_qualifier": "decreased",
                                                                     'inverted': True}}}
@@ -517,5 +517,5 @@ def test_versions(test_client):
 
     # check the data
     assert('v2.4.7' in ret)
-    assert('v3.0.3' in ret)
+    assert('v3.1.0' in ret)
     assert(len(ret) == 6 and 'latest' in ret)
