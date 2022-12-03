@@ -4,12 +4,16 @@ import typing
 from collections import defaultdict
 from bmt import Toolkit
 from jsonasobj import as_dict
+from copy import deepcopy
+import yaml
 
 # set the default version for the UI and web service calls
-default_version = os.environ.get('DEFAULT_VERSION', "v3.1.0")
+default_version = os.environ.get('DEFAULT_VERSION', "v3.1.1")
 
 # do not load these versions
-skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates']
+# the 3.0.0-v3.1.0 don't have the predicates-mapping.yaml needed to do predicate resolution
+skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates',
+                 'v3.0.0', 'v3.0.1', 'v3.0.2', 'v3.0.3', 'v3.1.0']
 
 
 def get_latest_bl_model_release_url() -> str:
@@ -54,10 +58,12 @@ models = {
     'latest': get_latest_bl_model_release_url()
 }
 
+mappings = { }
+
 # flag to indicate that the biolink models have been loaded
 models_loaded = False
 
-def get_models() -> (dict):
+def get_models() -> (dict,dict):
     """
     gets the biolink model versions
 
@@ -92,10 +98,17 @@ def get_models() -> (dict):
                 if version not in skip_versions:
                     # save the version in the dict
                     models.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/biolink-model.yaml'})
+                    if version.startswith('v') and version[1] != '.' and int(version[1]) > 2:
+                        #This is what we really want, but there's a bit of bugs in 3.1.0 so until 3.1.1 we're gonna use mine
+                        #See the "latest" below as well
+                        #mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/predicate_mapping.yaml'})
+                        mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/cbizon-patch-3/predicate_mapping.yaml'})
 
             # tack on the latest version
             models.update({'latest': get_latest_bl_model_release_url()})
-    return models
+            #mappings.update({'latest': models['latest'].replace("biolink-model.yaml", "predicate_mapping.yaml")})
+            mappings.update( {"latest": f'https://raw.githubusercontent.com/biolink/biolink-model/cbizon-patch-3/predicate_mapping.yaml'})
+    return models, mappings
 
 
 def _key_case(arg: str):
@@ -204,9 +217,19 @@ def generate_bl_map(url=None, version='latest'):
     """Generate map (dict) from BiolinkModel."""
     get_models()
 
+    mapping_url = None
     if url is None:
         url = models[version]
+        if version in mappings:
+            mapping_url = mappings[version]
     bmt = bmt_wrapper(Toolkit(url))
+    if mapping_url is None:
+        pmaps = []
+    else:
+        pr = yaml.safe_load(requests.get(mapping_url).content)
+        if 'predicate mappings' not in pr:
+            print(pr)
+        pmaps = pr['predicate mappings']
     elements = bmt.get_descendants('related to') + bmt.get_descendants('association') + bmt.get_descendants('named thing') \
                + ['named thing', 'related to', 'association'] + get_all_mixins(bmt)
     geneology = {
@@ -244,6 +267,24 @@ def generate_bl_map(url=None, version='latest'):
             uri_map[uri].append({'mapping_type': 'related', 'mapping': {"predicate": key}})
         for uri in value.get('close_mappings', []):
             uri_map[uri].append({'mapping_type': 'close', 'mapping': {"predicate": key}})
+    #For versions >=3.1.1, the mappings are coming from pmaps
+    for pmap in pmaps:
+        cpmap = deepcopy(pmap)
+        cpmap.pop('mapped predicate',None)
+        cpmap.pop('exact matches',None)
+        cpmap.pop('broad matches',None)
+        cpmap.pop('narrow matches',None)
+        cpmap.pop('close matches',None)
+        for uri in pmap.get('exact matches', []):
+            uri_map[uri].append({'mapping_type': 'exact', 'mapping': cpmap})
+        for uri in pmap.get('narrow matches', []):
+            uri_map[uri].append({'mapping_type': 'narrow', 'mapping': cpmap})
+        for uri in pmap.get('broad matches', []):
+            uri_map[uri].append({'mapping_type': 'broad', 'mapping': cpmap})
+        for uri in pmap.get('related matches', []):
+            uri_map[uri].append({'mapping_type': 'related', 'mapping': cpmap})
+        for uri in pmap.get('close matches', []):
+            uri_map[uri].append({'mapping_type': 'close', 'mapping': cpmap})
     data = {
         'geneology': geneology,
         'raw': raw,

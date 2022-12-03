@@ -13,7 +13,7 @@ from urllib.parse import unquote
 from bl_lookup.ubergraph import UberGraph
 from main import args
 
-APP_VERSION = '1.3.3'
+APP_VERSION = '1.4.0'
 APP = FastAPI(title='Biolink Model Lookup', version=APP_VERSION)
 
 biolink_data = dict()
@@ -26,13 +26,13 @@ async def load_userdata(models = None):
         biolink_data[args.model], biolink_uri_maps[args.model] = generate_bl_map(version=args.model)
     else:
         if models is None:
-            models = get_models()
+            models, mappings = get_models()
         for version in models:
             biolink_data[version], biolink_uri_maps[version] = generate_bl_map(version=version)
 
-    pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('../resources/predicate_map.json')
-    with open(pmapfile,'r') as inmap:
-        biolink_qualifier_map.update(json.load(inmap))
+    #pmapfile = pathlib.Path(__file__).parent.resolve().joinpath('../resources/predicate_map.json')
+    #with open(pmapfile,'r') as inmap:
+    #    biolink_qualifier_map.update(json.load(inmap))
 
 def construct_open_api_schema():
 
@@ -322,6 +322,21 @@ async def resolve(predicate: Union[List[str], None] = Query(default=None), versi
                             inverted = False
             label = props['name']
             pred= props['slot_uri']
+            try:
+                q = pred_mapping[0]['mapping']
+            except:
+                q = {}
+            quals = {}
+            #this crummy processing should maybe go on read
+            for k,v in q.items():
+                if k == 'predicate':
+                    continue
+                sc = '_'.join(v.split())
+                if k in ['predicate','qualified predicate']:
+                    if not sc.startswith('biolink'):
+                        sc = f"biolink:{sc}"
+                sk = '_'.join(k.split())
+                quals[sk] = sc
         except KeyError:
             result[predicate] = {
                 'predicate': 'biolink:related_to',
@@ -338,19 +353,20 @@ async def resolve(predicate: Union[List[str], None] = Query(default=None), versi
                 'label': label,
                 'inverted': inverted
             }
+            result[predicate].update(quals)
 
         # We might need to transform these into qualified predicates
-        if major_version == 'v3':
-            pmap = biolink_qualifier_map
-            if pred in pmap:
-                result[predicate].update(pmap[pred])
-                if inverted:
-                    rpred = result[predicate]
-                    toreplace = [x for x in rpred.keys() if x.startswith('object')]
-                    for k in toreplace:
-                        newk = k.replace('object','subject')
-                        rpred[newk] = rpred[k]
-                        del rpred[k]
+#        if major_version == 'v3':
+#            pmap = biolink_qualifier_map
+#            if pred in pmap:
+#                result[predicate].update(pmap[pred])
+#                if inverted:
+#                    rpred = result[predicate]
+#                    toreplace = [x for x in rpred.keys() if x.startswith('object')]
+#                    for k in toreplace:
+#                        newk = k.replace('object','subject')
+#                        rpred[newk] = rpred[k]
+#                        del rpred[k]
     # if nothing was found
     if len(result) == 0:
         ret_status = 404
