@@ -19,7 +19,6 @@ USER nru
 ADD ./bl_lookup /home/nru/bl_lookup
 ADD ./main.py /home/nru/main.py
 ADD ./setup.py /home/nru/setup.py
-ADD ./resources/predicate_map.json /home/nru/resources/predicate_map.json
 ADD openapi-config.yml /home/nru/openapi-config.yml
 
 EXPOSE 8144
