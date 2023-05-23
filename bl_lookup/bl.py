@@ -8,12 +8,12 @@ from copy import deepcopy
 import yaml
 
 # set the default version for the UI and web service calls
-default_version = os.environ.get('DEFAULT_VERSION', "v3.1.1")
+default_version = os.environ.get('DEFAULT_VERSION', "v3.1.2")
 
 # do not load these versions
 # the 3.0.0-v3.1.0 don't have the predicates-mapping.yaml needed to do predicate resolution
 skip_versions = ['v1.0.0', 'v1.1.0', 'v1.1.1', 'v1.2.0', 'v1.3.0', 'v2.4.2-alpha-qualifiers', 'deprecated-predicates',
-                 'v3.0.0', 'v3.0.1', 'v3.0.2', 'v3.0.3', 'v3.1.0']
+                 'v3.0.0', 'v3.0.1', 'v3.0.2', 'v3.0.3', 'v3.1.0', 'v3.1.1']
 
 
 def get_latest_bl_model_release_url() -> str:
