@@ -101,13 +101,13 @@ def get_models() -> (dict,dict):
                     if version.startswith('v') and version[1] != '.' and int(version[1]) > 2:
                         #This is what we really want, but there's a bit of bugs in 3.1.0 so until 3.1.1 we're gonna use mine
                         #See the "latest" below as well
-                        #mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/predicate_mapping.yaml'})
-                        mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/response/predicate_mapping.yaml'})
+                        mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/{version}/predicate_mapping.yaml'})
+                        #mappings.update({version: f'https://raw.githubusercontent.com/biolink/biolink-model/response/predicate_mapping.yaml'})
 
             # tack on the latest version
             models.update({'latest': get_latest_bl_model_release_url()})
             #mappings.update({'latest': models['latest'].replace("biolink-model.yaml", "predicate_mapping.yaml")})
-            mappings.update( {"latest": f'https://raw.githubusercontent.com/biolink/biolink-model/response/predicate_mapping.yaml'})
+            mappings.update( {"latest": f'https://raw.githubusercontent.com/biolink/biolink-model/latest/predicate_mapping.yaml'})
     return models, mappings
 
 
